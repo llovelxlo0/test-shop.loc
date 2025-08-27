@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/main.css') }}">
+     <!-- CSS only -->
     <title>Test_Shop</title>
 </head>
 <body>
@@ -12,6 +14,10 @@
     <p>This is the home page of your application.</p>
     <div>
         @auth
+            <ul>
+                <li><a href="{{ route('home') }}">Home</a></li>
+                <li><a href="{{ route('profile') }}" class="btn btn-primary">Profile</a></li>
+            </ul>
             <p>Hello, {{ Auth::user()->name }}!</p>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
