@@ -1,12 +1,7 @@
-<x-layout>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Register</title>
-    </head>
-    <body>
+@extends('layouts.app')
+
+        @section('content')
+        <div class="container">
         <h1>Register Page</h1>
         <form method="post" action="{{ route('register.process') }}">
             @csrf
@@ -31,8 +26,5 @@
                 <button type="submit">Register</button>
             </div>
         </form>
-
-        
-    </body>
-    </html>
-</x-layout>
+        @endsection
+</div>
