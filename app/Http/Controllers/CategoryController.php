@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Models\Category;
+use App\Models\Goods;
+use App\Http\Requests\CategoryRequest;
+use App\Models\CategoryType;
+use App\Models\CategoryName;
 
 
 
@@ -14,8 +17,10 @@ class CategoryController extends Controller
 {
     public function index() {
         
-        $categories = Category::all();
-        return view('categories.index', compact('categories')); // categories/index.blade.php
+        $categories = Goods::all();
+        $categoryTypes = CategoryType::all();
+        $categoryNames = CategoryName::all();
+        return view('categories.index', compact('categories' , 'categoryTypes' , 'categoryNames')); // categories/index.blade.php
     }
 
     //Created Forms
@@ -24,7 +29,10 @@ class CategoryController extends Controller
         if (Auth::user()->usertype !== 'admin') {
             return redirect()->route('categories.index')->with('error', 'Доступ запрещен!.'); // if user Access denied
         }
-        return view('categories.create'); // categories/create.blade.php
+        $categoryTypes = CategoryType::all();
+        $categoryNames = CategoryName::all();
+
+        return view('categories.create' , compact('categoryTypes' , 'categoryNames')); // categories/create.blade.php
     }
 
     //save new category
@@ -34,6 +42,8 @@ class CategoryController extends Controller
         }
 
         $request->validate([
+            'category_type' => 'required|string|',
+            'category_name' => 'required|string|',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
@@ -44,8 +54,12 @@ class CategoryController extends Controller
         if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('uploads', 'public');
     }
+        $categoryType = CategoryType::where('name', $request->category_type)->first();
+        $categoryName = CategoryName::where('name', $request->category_name)->first();
 
-        Category::create([
+        Goods::create([
+            'category_type' => $categoryType ? $categoryType->name : null,
+            'category_name' => $categoryName ? $categoryName->name : null,
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
@@ -55,20 +69,25 @@ class CategoryController extends Controller
     }
 
     //edit category
-    public function edit(Category $category) {
+    public function edit(Goods $category) {
         if (Auth::user()->usertype !== 'admin') {
             return redirect()->route('categories.index')->with('error', 'Доступ запрещен!.'); // if user Access denied
         }
-        return view('categories.edit', compact('category')); // categories/edit.blade.php
+        $categoryTypes = CategoryType::all();
+        $categoryNames = CategoryName::all();
+
+        return view('categories.edit', compact('category', 'categoryType' , 'categoryNames')); // categories/edit.blade.php
     }
 
     //update category
-    public function update(Request $request, Category $category) {
+    public function update(Request $request, Goods $category) {
         if (Auth::user()->usertype !== 'admin') {
             return redirect()->route('categories.index')->with('error', 'Доступ запрещен!.'); // if user Access denied
         }
 
         $request->validate([
+            'category_type' => 'nullable|string|max:255',
+            'category_name' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
@@ -80,7 +99,7 @@ class CategoryController extends Controller
     }
 
     //delete category
-    public function destroy(Category $category) {
+    public function destroy(Goods $category) {
         if (Auth::user()->usertype !== 'admin') {
             return redirect()->route('categories.index')->with('error', 'Доступ запрещен!.'); // if user Access denied
         }

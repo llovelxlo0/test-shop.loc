@@ -22,7 +22,7 @@ class CategoryTypeSeeder extends Seeder
         ['id' => 6, 'name' => 'Storage']
         ];
         foreach ($categoryTypes as $type) {
-            CategoryType::create(['name' => $type]);
+            CategoryType::create(['name' => $type['name']]);
     }
 }
         // \App\Models\User::factory(10)->create();
