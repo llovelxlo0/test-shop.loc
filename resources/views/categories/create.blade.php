@@ -20,23 +20,33 @@
     {{-- Форма добавления категории --}}
     <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <div class="mb-3">
-            <label for="category_name" class="form-label">Название категории</label>
-            <select name="category_name" id="category_name" class="form-select" required>
-                <option value="" disabled selected>Выберите название категории</option>
-                @foreach($categoryNames as $name)
-                    <option value="{{ $name->id }}">{{ $name->name }}</option>
-                @endforeach
-            </select>
-        <div class="mb-3">
-            <label for="category_type" class="form-label">Тип категории</label>
-            <select name="category_type" id="category_type" class="form-select" required>
-                <option value="" disabled selected>Выберите тип категории</option>
-                @foreach($categoryTypes as $type)
-                    <option value="{{ $type->id }}">{{ $type->name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <{{-- Название категории --}}
+    <div class="mb-3">
+        <label for="category_name_id" class="form-label">Название категории</label>
+        <select name="category_name_id" id="category_name_id" class="form-select" required>
+            <option value="" disabled selected>Выберите категорию</option>
+            @foreach($categoryNames as $name)
+                <option value="{{ $name->id }}">{{ $name->name }}</option>
+            @endforeach
+        </select>
+        @error('category_name_id')
+            <div class="text-danger">{{ $message }}</div>
+        @enderror
+    </div>
+
+    {{-- Тип категории --}}
+    <div class="mb-3">
+        <label for="category_type_id" class="form-label">Тип категории</label>
+        <select name="category_type_id" id="category_type_id" class="form-select" required>
+            <option value="" disabled selected>Выберите тип категории</option>
+            @foreach($categoryTypes as $type)
+                <option value="{{ $type->id }}">{{ $type->name }}</option>
+            @endforeach
+        </select>
+        @error('category_type_id')
+            <div class="text-danger">{{ $message }}</div>
+        @enderror
+    </div>
         <div class="mb-3">
             <label for="name" class="form-label">Название товара</label>
             <input type="text" name="name" id="name" class="form-control" placeholder="Введите название товара" required>

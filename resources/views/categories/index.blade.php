@@ -36,8 +36,9 @@
             @foreach($categories as $category)
                 <tr>
                     <td>{{ $category->id }}</td>
-                    <td>{{ optional($category->categoryName->name)}}</td>
-                    <td>{{ optional($category->categoryType->type)}}</td>
+                    <td>{{ $category->categoryName->name ?? '—' }}</td>
+                    <td>{{ $category->categoryType->name ?? '—' }}</td>
+                    <td>{{ $category->name }}</td>
                     <td>{{ $category->name }}</td>
                     <td>{{ $category->description }}</td>
                     <td>{{ number_format($category->price, 2) }}</td>

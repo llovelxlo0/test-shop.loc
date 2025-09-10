@@ -42,8 +42,8 @@ class CategoryController extends Controller
         }
 
         $request->validate([
-            'category_type' => 'required|string|',
-            'category_name' => 'required|string|',
+            'category_type_id' => 'required|exists:category_types,id',
+            'category_name_id' => 'required|exists:category_names,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
@@ -54,12 +54,10 @@ class CategoryController extends Controller
         if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('uploads', 'public');
     }
-        $categoryType = CategoryType::where('name', $request->category_type)->first();
-        $categoryName = CategoryName::where('name', $request->category_name)->first();
 
         Goods::create([
-            'category_type' => $categoryType ? $categoryType->name : null,
-            'category_name' => $categoryName ? $categoryName->name : null,
+            'category_type_id' => $request->category_type_id,
+            'category_name_id' => $request->category_name_id,
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,

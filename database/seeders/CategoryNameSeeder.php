@@ -15,11 +15,11 @@ class CategoryNameSeeder extends Seeder
     public function run(): void
     {
         $categoryNames = [
-            ['id' => 1, 'name' => 'Components'],
-            ['id' => 2, 'name' => 'Phone']
+            ['name' => 'Components'],
+            ['name' => 'Phone']
         ];
         foreach ($categoryNames as $name) {
-            CategoryName::create(['name' => $name['name']]);
+            CategoryName::create($name);
         }
     }
 }

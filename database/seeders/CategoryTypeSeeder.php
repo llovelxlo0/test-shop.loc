@@ -14,15 +14,15 @@ class CategoryTypeSeeder extends Seeder
     public function run(): void
     {
         $categoryTypes = [
-        ['id' => 1, 'name' => 'Motherboard'],
-        ['id' => 2, 'name' => 'CPU'],
-        ['id' => 3, 'name' => 'RAM'],
-        ['id' => 4, 'name' => 'GPU'],
-        ['id' => 5, 'name' => 'Power Supply'],
-        ['id' => 6, 'name' => 'Storage']
+        ['name' => 'Motherboard'],
+        ['name' => 'CPU'],
+        ['name' => 'RAM'],
+        ['name' => 'GPU'],
+        ['name' => 'Storage'],
+        ['name' => 'Power Supply']
         ];
         foreach ($categoryTypes as $type) {
-            CategoryType::create(['name' => $type['name']]);
+            CategoryType::create($type);
     }
 }
         // \App\Models\User::factory(10)->create();

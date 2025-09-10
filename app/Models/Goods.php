@@ -9,17 +9,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Goods extends Model
 {
-    protected $fillable = ['name', 'description', 'price', 'image'];
+    protected $fillable = [
+        'name',
+        'description', 
+        'price', 
+        'image',
+        'category_name_id',
+        'category_type_id'
+    ];
 
-    public function categoryType(): BelongsTo {
-        return $this->belongsTo(CategoryType::class);
-        }
-
-    public function categoryName(): BelongsTo{
-        return $this->belongsTo(CategoryName::class);
-        }
-
-    /*public function getFullNameAttribute(){
-        return trim(($this->categoryType()->name ?? '') . ' ' . ($this->categoryName()->name ?? ''));
-        } */
+    public function categoryName() {
+        return $this->belongsTo(CategoryName::class, 'category_name_id');
+    }
+    public function categoryType() {
+        return $this->belongsTo(CategoryType::class, 'category_type_id');
+    }
 }
