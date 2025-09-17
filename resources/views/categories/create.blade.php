@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Добавить новую категорию</h2>
+    <h1 class="mb-4">Добавить новую категорию</h1>
 
     {{-- Вывод ошибок --}}
     @if ($errors->any())
@@ -17,55 +17,67 @@
         </div>
     @endif
 
-    {{-- Форма добавления категории --}}
-    <form action="{{ route('categories.store') }}" method="POST" enctype="multipart/form-data">
+    <form method="GET" action="{{ route('categories.create') }}">
+    @csrf
+    <div class="mb-3">
+        <label for="parent_id">Категория</label>
+        <select name="parent_id" id="parent_id" onchange="this.form.submit()">
+            <option value="">Выберите Категорию</option>
+            @foreach($parents as $id => $name)
+                <option value="{{ $id }}"
+                  {{ ($selectedParentId == $id) ? 'selected' : '' }}>
+                    {{ $name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+</form>
+
+@if(isset($childCategories) && $childCategories->isNotEmpty())
+    <form method="POST" action="{{ route('categories.store') }}" enctype="multipart/form-data">
         @csrf
-        <{{-- Название категории --}}
-    <div class="mb-3">
-        <label for="category_name_id" class="form-label">Название категории</label>
-        <select name="category_name_id" id="category_name_id" class="form-select" required>
-            <option value="" disabled selected>Выберите категорию</option>
-            @foreach($categoryNames as $name)
-                <option value="{{ $name->id }}">{{ $name->name }}</option>
-            @endforeach
-        </select>
-        @error('category_name_id')
-            <div class="text-danger">{{ $message }}</div>
-        @enderror
-    </div>
 
-    {{-- Тип категории --}}
-    <div class="mb-3">
-        <label for="category_type_id" class="form-label">Тип категории</label>
-        <select name="category_type_id" id="category_type_id" class="form-select" required>
-            <option value="" disabled selected>Выберите тип категории</option>
-            @foreach($categoryTypes as $type)
-                <option value="{{ $type->id }}">{{ $type->name }}</option>
-            @endforeach
-        </select>
-        @error('category_type_id')
-            <div class="text-danger">{{ $message }}</div>
-        @enderror
-    </div>
-        <div class="mb-3">
-            <label for="name" class="form-label">Название товара</label>
-            <input type="text" name="name" id="name" class="form-control" placeholder="Введите название товара" required>
-        </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Описание</label>
-            <textarea name="description" id="description" class="form-control" rows="4" placeholder="Введите описание категории"></textarea>
-        <div class="mb-3">
-            <label for="price" class="form-label">Цена</label>
-            <input type="number" name="price" id="price" step="0.01" class="form-control" placeholder="Введите цену">
-        </div>
+        <input type="hidden" name="parent_id" value="{{ $selectedParentId }}">
 
         <div class="mb-3">
-            <label for="image" class="form-label">Картинка</label>
-            <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
+            <label for="category_id">Тип Категория</label>
+            <select name="category_id" id="category_id">
+                <option value="">Выберите Тип категории</option>
+                @foreach($childCategories as $id => $name)
+                    <option value="{{ $id }}"
+                      {{ old('category_id') == $id ? 'selected' : '' }}>
+                        {{ $name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
-        <button type="submit" class="btn btn-success">Добавить</button>
-        <a href="{{ route('categories.index') }}" class="btn btn-secondary">Назад</a>
-    </form>
+            <div class="mb-3">
+                <label for="name" class="form-label">Название товара</label>
+                <input type="text" name="name" id="name" class="form-control"
+                       placeholder="Введите название товара" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Описание</label>
+                <textarea name="description" id="description" class="form-control"
+                          rows="4" placeholder="Введите описание категории"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Цена</label>
+                <input type="number" name="price" id="price" step="0.01"
+                       class="form-control" placeholder="Введите цену">
+            </div>
+
+            <div class="mb-3">
+                <label for="image" class="form-label">Картинка</label>
+                <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">Добавить</button>
+            <a href="{{ route('categories.index') }}" class="btn btn-secondary">Назад</a>
+        </form>
+    @endif
 </div>
 @endsection

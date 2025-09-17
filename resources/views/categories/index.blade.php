@@ -19,9 +19,9 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Название Категории</th>
                 <th>Тип Категории</th>
-                <th>Название</th>
+                <th>Название Категории</th>
+                <th>Название Продукта</th>
                 <th>Описание</th>
                 <th>Цена</th>
                 <th>Картинка</th>
@@ -36,9 +36,8 @@
             @foreach($categories as $category)
                 <tr>
                     <td>{{ $category->id }}</td>
-                    <td>{{ $category->categoryName->name ?? '—' }}</td>
-                    <td>{{ $category->categoryType->name ?? '—' }}</td>
-                    <td>{{ $category->name }}</td>
+                    <td>{{ optional($category->category->parent)->name ?? '—' }}</td>
+                    <td>{{ $category->category->name ?? '—' }}</td>
                     <td>{{ $category->name }}</td>
                     <td>{{ $category->description }}</td>
                     <td>{{ number_format($category->price, 2) }}</td>
