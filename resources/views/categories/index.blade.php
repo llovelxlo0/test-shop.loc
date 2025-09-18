@@ -38,24 +38,26 @@
                     <td>{{ $category->id }}</td>
                     <td>{{ optional($category->category->parent)->name ?? '—' }}</td>
                     <td>{{ $category->category->name ?? '—' }}</td>
-                    <td>{{ $category->name }}</td>
+                    <td>
+                        <a href="{{ route('goods.info', $category->id) }}">
+                            {{ $category->name }}
+                        </a>
+                    </td>
                     <td>{{ $category->description }}</td>
                     <td>{{ number_format($category->price, 2) }}</td>
-                <td>
-                    @if($category->image)
-                        <img src="{{ asset('storage/' . $category->image) }}" width="100" alt="Image">
-                    @else
-                        <span>Нет изображения</span>
-                    @endif
-                </td>
-                <td>
+                    <td>
+                        @if($category->image)
+                            <img src="{{ asset('storage/' . $category->image) }}" width="100" alt="Image">
+                        @else
+                            <span>Нет изображения</span>
+                        @endif
+                    </td>
                     @if(Auth::user()->usertype === 'admin')
-                    
                     <td class="text-center align-middle">
                         <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
-                            <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline-block;">
-                        @csrf
-                        @method('DELETE')
+                        <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline-block;">
+                            @csrf
+                            @method('DELETE')
                             <button class="btn btn-danger btn-sm" onclick="return confirm('Удалить категорию?')">Удалить</button>
                         </form>
                     </td>

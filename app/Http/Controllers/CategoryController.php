@@ -29,7 +29,7 @@ class CategoryController extends Controller
 
     return view('categories.create', compact('parents', 'childCategories' , 'selectedParentId')); // categories/create.blade.php
     }
-
+    
     //save new category
     public function store(CategoryRequest $request) {
         
