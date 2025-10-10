@@ -14,39 +14,83 @@
 <body>
     {{-- Навигационная панель --}}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">Zett.Shop</a>
+  <div class="container">
+    <a class="navbar-brand" href="{{ url('/') }}">Zett.Shop</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav ms-auto">
 
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    @auth
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('categories.index') }}">Категории</a>
-                        </li>
-                        @if(Auth::user()->usertype === 'admin')
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('categories.create') }}">Добавить категорию</a>
-                            </li>
-                        @endif
-                        <li class="nav-item">
-                            <form action="{{ route('logout') }}" method="POST">
-                                @csrf
-                                <a href="{{ route('profile') }}" class="btn btn-primary">Profile</a>
-                                <button type="submit" class="btn btn-danger btn-sm">Выйти</button>
-                            </form>
-                        </li>
-                    @else
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Войти</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('register') }}">Регистрация</a>
-                        </li>
-                    @endauth
-                </ul>
-            </div>
-        </div>
-    </nav>
+        {{-- Товары с подменю --}}
+        <li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" id="productsDropdown" role="button"
+     data-bs-toggle="dropdown" aria-expanded="false">
+    Товары
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="productsDropdown">
+    @if(!empty($tree))
+      @foreach($tree as $parentName => $children)
+        @if(count($children) > 0)
+        <li class="dropdown-submenu">
+          <a class="dropdown-item dropdown-toggle" href="#">
+            {{ ucfirst($parentName) }}
+          </a>
+          <ul class="dropdown-menu">
+            @foreach($children as $childId => $childName)
+              <li>
+                <a class="dropdown-item" href="{{ route('goods.info', $childId) }}">
+                  {{ $childName }}
+                </a>
+              </li>
+            @endforeach
+          </ul>
+        </li>
+        @endif
+      @endforeach
+    @endif
+  </ul>
+</li>
+
+        @auth
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('categories.index') }}">Категории</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('cart.view') }}">Корзина
+              @if(session('cart') && count(session('cart')) > 0)
+                <span class="badge bg-success">{{ count(session('cart')) }}</span>
+              @endif
+            </a>
+          </li>
+          @if(Auth::user()->usertype === 'admin')
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('categories.create') }}">Добавить категорию</a>
+            </li>
+          @endif
+          <li class="nav-item">
+            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+              @csrf
+              <a href="{{ route('profile') }}" class="btn btn-primary btn-sm">Profile</a>
+              <button type="submit" class="btn btn-danger btn-sm">Выйти</button>
+            </form>
+          </li>
+        @else
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('login') }}">Войти</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('register') }}">Регистрация</a>
+          </li>
+        @endauth
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
 
     {{-- Контент страниц --}}
     <div class="container">

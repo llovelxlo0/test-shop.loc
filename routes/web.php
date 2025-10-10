@@ -7,6 +7,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\GoodsController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 
 Route::get('/', function () {
@@ -19,8 +21,11 @@ Route::post('login', [AuthController::class, 'processLogin'])->name('login.proce
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 
+
+
 Route::middleware('auth')->group(function () {
     Route::get('profile', [ProfileController::class, 'showProfile'])->name('profile');
+    Route::get('goods', [GoodsController::class, 'goods'])->name('goods');
     Route::put('profile', [ProfileController::class, 'editProfile'])->name('profile.edit');
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -29,5 +34,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::get('cart', [CartController::class, 'viewCart'])->name('cart.view');
+    Route::post('cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::get('cart/test', [CartController::class, 'add'])->name('cart.test');
+    Route::post('cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('checkout', [OrderController::class, 'checkout'])->name('checkout');
 });
 

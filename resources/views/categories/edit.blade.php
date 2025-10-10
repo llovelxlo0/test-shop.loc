@@ -77,6 +77,14 @@
             @enderror
         </div>
 
+        <div class="mb-3">
+            <label for="stock" class="form-label">Количество на складе</label>
+            <input type="number" name="stock" id="stock" min="0" value="{{ old('stock', $category->stock ?? 0) }}" class="form-control">
+            @error('stock')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
         <button type="submit" class="btn btn-success">Обновить</button>
         <a href="{{ route('categories.index') }}" class="btn btn-secondary">Назад</a>
     </form>

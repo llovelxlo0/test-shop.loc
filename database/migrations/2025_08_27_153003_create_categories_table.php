@@ -21,6 +21,7 @@ return new class extends Migration
 
         Schema::create('goods', function (Blueprint $table) {
             $table->id();
+            $table->integer('stock')->unsigned()->default(0);
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();

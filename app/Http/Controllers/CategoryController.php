@@ -43,7 +43,8 @@ class CategoryController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'category_id' => $request->category_id,
-            'image' => $imagePath
+            'image' => $imagePath,
+            'stock' => $request->stock
         ]);
         return redirect()->route('categories.index')->with('success', 'Категория успешно создана!.');
     }
@@ -75,6 +76,7 @@ class CategoryController extends Controller
         $category->name = $request->name;
         $category->description = $request->description;
         $category->price = $request->price;
+        $category->stock = $request->stock;
         $category->save();
 
         return redirect()->route('categories.index')->with('success', 'Категория успешно обновлена!.');

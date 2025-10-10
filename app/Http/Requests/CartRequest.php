@@ -4,9 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\UsersRequest;
 
-class CategoryRequest extends FormRequest
+class CartRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,13 +23,8 @@ class CategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //'parent_id' => 'required|exists:categories,id',
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'stock' => 'required|integer|min:0'
+                'goods_id' => 'required|integer|exists:goods,id',
+                'quantity' => 'integer|min:1'
         ];
     }
 }

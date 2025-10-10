@@ -12,6 +12,7 @@
 
     <p><strong>Описание:</strong> {{ $goods->description }}</p>
     <p><strong>Цена:</strong> {{ number_format($goods->price, 2) }}</p>
+    <p><strong>Количество на складе:</strong> {{ $goods->stock }}</p>
 
     {{-- Если есть категория --}}
     @if ($goods->category)

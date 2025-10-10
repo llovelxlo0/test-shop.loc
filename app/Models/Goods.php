@@ -13,10 +13,17 @@ class Goods extends Model
         'description', 
         'price', 
         'image',
-        'category_id'
+        'category_id',
+        'stock'
     ];
 
-    public function category() {
+    public function category() 
+    {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class, 'goods_id');
     }
 }

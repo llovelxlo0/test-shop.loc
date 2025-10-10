@@ -25,6 +25,8 @@
                 <th>Описание</th>
                 <th>Цена</th>
                 <th>Картинка</th>
+                <th>Количество на складе</th>
+                <th>Корзина</th>
                 @if(Auth::user()->usertype === 'admin')
                     <th>Действия</th>
                 @endif
@@ -50,6 +52,24 @@
                             <img src="{{ asset('storage/' . $category->image) }}" width="100" alt="Image">
                         @else
                             <span>Нет изображения</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($category->stock !== null)
+                            {{ $category->stock }}
+                        @else
+                            <span>—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($category->stock > 0)
+                            <form action="{{ route('cart.add') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="goods_id" value="{{ $category->id }}">
+                                <button type="submit" class="btn btn-success btn-sm">В корзину</button>
+                            </form>
+                        @else
+                            <span class="text-danger">Нет в наличии</span>
                         @endif
                     </td>
                     @if(Auth::user()->usertype === 'admin')
