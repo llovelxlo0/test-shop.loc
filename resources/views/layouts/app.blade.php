@@ -54,7 +54,7 @@
   </ul>
 </li>
 
-        @auth
+        
           <li class="nav-item">
             <a class="nav-link" href="{{ route('categories.index') }}">Категории</a>
           </li>
@@ -65,6 +65,7 @@
               @endif
             </a>
           </li>
+          @auth
           @if(Auth::user()->usertype === 'admin')
             <li class="nav-item">
               <a class="nav-link" href="{{ route('categories.create') }}">Добавить категорию</a>

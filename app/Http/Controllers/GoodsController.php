@@ -13,17 +13,13 @@ class GoodsController extends Controller
         return view('categories.Goodsinfo', compact('goods')); // goods/info.blade.php
     }
 
-    public function goods() {
-        view()->composer('Layouts.app', function ($view) {
-
+        public function goods() {
         $parents = Category::whereNull('parent_id')->get();
 
         $tree = [];
         foreach ($parents as $parent) {
             $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
         }
-        //dd($tree);
-        return view('Goods', compact('tree'));
-        });
+        return view('Goods', compact('tree')); // categories/goods.blade.php
     }
 }

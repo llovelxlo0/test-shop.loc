@@ -11,7 +11,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    @if(Auth::user()->usertype === 'admin')
+    @if(Auth::check() && Auth::user()->isAdmin())
         <a href="{{ route('categories.create') }}" class="btn btn-primary">Добавить категорию</a>
     @endif
 
@@ -27,7 +27,7 @@
                 <th>Картинка</th>
                 <th>Количество на складе</th>
                 <th>Корзина</th>
-                @if(Auth::user()->usertype === 'admin')
+                @if(Auth::check() && Auth::user()->isAdmin())
                     <th>Действия</th>
                 @endif
             </tr>
@@ -72,7 +72,7 @@
                             <span class="text-danger">Нет в наличии</span>
                         @endif
                     </td>
-                    @if(Auth::user()->usertype === 'admin')
+                    @if(Auth::check() && Auth::user()->isAdmin())
                     <td class="text-center align-middle">
                         <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
                         <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline-block;">

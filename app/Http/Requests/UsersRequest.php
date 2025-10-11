@@ -12,7 +12,7 @@ class UsersRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check() && Auth::user()->usertype === 'admin';
+        return true;
     }
 
     /**
