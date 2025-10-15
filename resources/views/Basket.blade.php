@@ -48,7 +48,7 @@
             </tbody>
         </table>
         <h3>Общая сумма: {{ number_format($total, 2) }}</h3>
-        <form method="POST" action="{{ route('checkout') }}">
+        <form action="{{ route('checkout') }}" method="POST" >
             @csrf
             <button type="submit" class="btn btn-success">Оформить заказ</button>
         </form>

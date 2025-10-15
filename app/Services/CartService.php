@@ -115,14 +115,15 @@ class CartService
                 ];
             });
         } else {
-            $session = session()->get('cart', []);
-            return collect($session)->map(function($ci) {
-                $product = Goods::find($ci['goods_id']);
+            $sessionCart = session()->get('cart', []);
+            return collect($sessionCart)->map(function($items, $goodsId) {
+                $product = Goods::find($goodsId);
                 if (!$product) return null;
+                $quantity = $items['quantity'] ?? 0;
                 return [
                     'goods' => $product,
-                    'quantity' => $ci['quantity'],
-                    'price' => $ci['price'],
+                    'quantity' => min($quantity, $product->stock),
+                    'price' => $product->price,
                 ];
             })->filter(); // Убираем null элементы
         }
@@ -131,8 +132,8 @@ class CartService
     public function mergeSessionCartToUser (int $userId)
     {
         $sessionCart = session()->get('cart', []);
-        foreach ($sessionCart as $goodsId => $data) {
-            $quantity = is_array($data) ? $data['quantity'] : $data;  // Поддержка обоих форматов
+        foreach ($sessionCart as $goodsId => $items) {
+            $quantity = is_array($items) ? $items['quantity'] : $items;  // Поддержка обоих форматов
             $this->addToCartForUser($userId, $goodsId, $quantity);
         }
         session()->forget('cart');
@@ -140,7 +141,7 @@ class CartService
 
     protected function addToCartForUser(int $userId, int $goodsId, int $quantity)
     {
-        $product = CartItem::findOrFail($goodsId);
+        $product = Goods::findOrFail($goodsId);
         if ($product->stock < $quantity) {
             $quantity = $product->stock; // Ограничиваем количеством на складе
         }

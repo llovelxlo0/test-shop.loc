@@ -19,13 +19,13 @@ Route::get('/', function () {
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AuthController::class, 'processLogin'])->name('login.process');
     Route::resource('/categories', CategoryController::class);
-    //Route::resource('/categories', CategoryController::class);
     Route::resource('/goods', GoodsController::class);
     Route::get('cart', [CartController::class, 'viewCart'])->name('cart.view');
     Route::post('cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('cart/update', [CartController::class, 'update'])->name('cart.update');
     Route::post('cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     Route::post('checkout', [OrderController::class, 'checkout'])->name('checkout');
+    Route::get('order/confirmation/{order}', [OrderController::class, 'confirmation'])->name('order.confirmation');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
 

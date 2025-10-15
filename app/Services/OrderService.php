@@ -67,7 +67,6 @@ class OrderService
             } else {
             session()->forget('cart');
             }
-            return $order;
         });
     }
 }

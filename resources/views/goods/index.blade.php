@@ -12,7 +12,7 @@
     @endif
 
     @if(Auth::check() && Auth::user()->isAdmin())
-        <a href="{{ route('goods.create') }}" class="btn btn-primary">Добавить категорию</a>
+        <a href="{{ route('goods.create') }}" class="btn btn-primary">Добавить товар</a>
     @endif
 
     <table class="table mt-3">

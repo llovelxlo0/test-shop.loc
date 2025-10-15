@@ -42,7 +42,7 @@ class GoodsController extends Controller
             $imagePath = $request->file('image')->store('goods', 'public');
         }
         $this->goodsService->createGoods($data, $imagePath);
-        return redirect()->route('goods.index')->with('success', 'Категория успешно создана.');
+        return redirect()->route('goods.index')->with('success', 'Товар успешно создан.');
     }
     public function edit(Goods $good, Request $request) 
     {
@@ -66,12 +66,12 @@ class GoodsController extends Controller
             $imagePath = $request->file('image')->store('goods', 'public');
         }
         $this->goodsService->updateGoods($good, $data, $imagePath);
-        return redirect()->route('goods.index')->with('success', 'Категория успешно обновлена.');
+        return redirect()->route('goods.index')->with('success', 'Товар успешно обновлен.');
     }
     public function destroy(Goods $good) 
     {
         $this->goodsService->deleteGoods($good);
-        return redirect()->route('goods.index')->with('success', 'Категория успешно удалена.');
+        return redirect()->route('goods.index')->with('success', 'Товар успешно удален.');
     }
     public function FullInfo(Goods $goods) 
     {

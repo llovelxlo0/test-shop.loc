@@ -6,13 +6,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use App\Services\CartService;
 
 
 
 class AuthController extends Controller
 {
+    protected $cartService;
+    public function __construct(CartService $cartService)
+    {
+        $this->cartService = $cartService;
+    }
     public function showLoginForm(): View {
-        return view('Login'); //-showLoginform from Login.blade.php
+        return view('Login');
     }
 
     public function processLogin(Request $request):RedirectResponse {
@@ -21,11 +27,9 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        //dd('data are valid'); //-check data are valid
-
         $credentials = $request->only('name', 'password');
         if (Auth::attempt($credentials)) {
-            // Authentication passed...
+            $this->cartService->mergeSessionCartToUser(Auth::id());
             return redirect('/')->with('status', 'Login successful!');
         }
         return back()->withInput()->with('status', 'Invalid credentials.');
@@ -34,4 +38,5 @@ class AuthController extends Controller
         Auth::logout();
         return redirect('/')->with('status', 'Logged out successfully.');
     }
+    
 }

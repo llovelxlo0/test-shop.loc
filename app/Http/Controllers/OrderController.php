@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\OrderService;
 use App\Services\CartService;
+use App\Models\Order;
 
 class OrderController extends Controller
 {
@@ -20,9 +21,13 @@ class OrderController extends Controller
     {
         try {
             $order = $this->orderService->checkout();
-            return redirect()->route('orders.view', ['order' => $order->id])->with('success', 'Заказ успешно создан');
+            return redirect()->route('cart.view')->with('success', 'Заказ успешно создан');
         } catch (\Exception $e) {
             return redirect()->route('cart.view')->with('error', $e->getMessage());
         }
+    }
+    public function confirmation(Order $order)
+    {
+    return view('order.view', compact('order'));
     }
 }
