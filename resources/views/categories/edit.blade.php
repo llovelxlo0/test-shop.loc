@@ -6,8 +6,7 @@
 <div class="container">
     <h1 class="mb-4">Редактировать категорию</h1>
 
-{{-- GET форма для смены выбранного родителя --}}
-<form method="GET" action="{{ route('categories.edit', $category->id) }}" class="mb-3">
+   <form method="GET" action="{{ route('categories.edit', $category->id) }}" class="mb-3">
     <select name="parent_id" onchange="this.form.submit()" class="form-select">
         <option value="">Выберите родителя</option>
         @foreach($parents as $id => $name)
@@ -41,53 +40,8 @@
         @enderror
     </div>
 
-        {{-- Остальные поля --}}
-        <div class="mb-3">
-            <label for="name" class="form-label">Название</label>
-            <input type="text" name="name" class="form-control"
-                   id="name" value="{{ old('name', $category->name) }}" required>
-            @error('name')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="mb-3">
-            <label for="description" class="form-label">Описание</label>
-            <textarea name="description" id="description" class="form-control"
-                      rows="4">{{ old('description', $category->description) }}</textarea>
-            @error('description')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="mb-3">
-            <label for="price" class="form-label">Цена</label>
-            <input type="number" name="price" id="price" step="0.01"
-                   class="form-control" value="{{ old('price', $category->price) }}">
-            @error('price')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="mb-3">
-            <label for="image" class="form-label">Картинка</label>
-            <input type="file" name="image" id="image" class="form-control" accept="image/*">
-            @error('image')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div class="mb-3">
-            <label for="stock" class="form-label">Количество на складе</label>
-            <input type="number" name="stock" id="stock" min="0" value="{{ old('stock', $category->stock ?? 0) }}" class="form-control">
-            @error('stock')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <button type="submit" class="btn btn-success">Обновить</button>
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
         <a href="{{ route('categories.index') }}" class="btn btn-secondary">Назад</a>
     </form>
-
 </div>
 @endsection

@@ -2,89 +2,72 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CategoryRequest;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Models\Goods;
+use App\Services\CategoryService;
 use App\Models\Category;
+
 
 class CategoryController extends Controller
 {
-    public function index() {
-        
-        $categories = Goods::with('category')->paginate(15);
-        return view('categories.index', compact('categories' )); // categories/index.blade.php
+    protected $categoryService;
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
     }
+    public function index()
+    {
+        $categories = $this->categoryService->getAllCategories();
+        return view('categories.index', compact('categories'));
+    }
+    public function create(Request $request)
+    {
+        $parents = $this->categoryService->getParentCategories();
+        $selectedParentId = $request->query('parent_id');
+        $childCategories = $selectedParentId ? $this->categoryService->getChildCategories($selectedParentId) : collect();
 
-    //Created Forms
-    public function create(Request $request) {
-        $parents = Category::whereNull('parent_id')->pluck('name', 'id');
+    return view('categories.create', compact('parents', 'selectedParentId', 'childCategories'));
+    }
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id'
+        ]);
+        $this->categoryService->createCategory($data);
+        return redirect()->route('categories.index')->with('success', 'Категория успешно создана.');
+    }
+    public function edit(Category $category, Request $request)
+    {
+    $parents = $this->categoryService->getParentCategories();
 
-        $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id');
+        $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id', $category ? $category->parent_id : null);
 
         $childCategories = collect();
         if ($request->filled('parent_id')) {
-            $childCategories = Category::where('parent_id', $request->parent_id)->pluck('name', 'id');
+            $childCategories = $this->categoryService->getChildCategories($request->parent_id);
+        } elseif ($category && $category->parent_id) {
+            $childCategories = $this->categoryService->getChildCategories($category->parent_id);
         }
-
-    return view('categories.create', compact('parents', 'childCategories' , 'selectedParentId')); // categories/create.blade.php
+        return view('categories.edit', compact('category', 'parents', 'childCategories', 'selectedParentId'));
     }
-    
-    //save new category
-    public function store(CategoryRequest $request) {
-        
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('uploads', 'public');
-    }
-
-        Goods::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price,
-            'category_id' => $request->category_id,
-            'image' => $imagePath,
-            'stock' => $request->stock
+    public function update(Request $request, Category $category)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id'
         ]);
-        return redirect()->route('categories.index')->with('success', 'Категория успешно создана!.');
+        $this->categoryService->updateCategory($category, $data);
+        return redirect()->route('categories.index')->with('success', 'Категория успешно обновлена.');
     }
-
-    //edit category
-    public function edit(Request $request , Goods $category) {
-       $parents = Category::whereNull('parent_id')->pluck('name', 'id');
-
-       $selectedParentId = $request->get('parent_id') ?? optional($category->category)->parent_id ?? null;
-
-       $childCategories = collect();
-         if ($selectedParentId) {
-                $childCategories = Category::where('parent_id', $selectedParentId)->pluck('name', 'id');
-         }
-
-    
-    return view('categories.edit', compact('category', 'parents' , 'childCategories', 'selectedParentId')); // categories/edit.blade.php
+    public function destroy(Category $category)
+    {
+        $this->categoryService->deleteCategory($category);
+        return redirect()->route('categories.index')->with('success', 'Категория успешно удалена.');
     }
-
-    //update category
-    public function update(CategoryRequest $request, Goods $category) {
-        //dd('reached update', $request->all(), $category);
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('uploads', 'public');
-            $category->image = $imagePath;
-        }
-
-        $category->category_id = $request->category_id;
-        $category->name = $request->name;
-        $category->description = $request->description;
-        $category->price = $request->price;
-        $category->stock = $request->stock;
-        $category->save();
-
-        return redirect()->route('categories.index')->with('success', 'Категория успешно обновлена!.');
-    }
-
-    //delete category
-    public function destroy(Goods $category) {
-        $category->delete();
-        return redirect()->route('categories.index')->with('success', 'Категория успешно удалена!.');
+    public function show(Category $category)
+    {
+        return view('categories.show', compact('category'));
     }
 }

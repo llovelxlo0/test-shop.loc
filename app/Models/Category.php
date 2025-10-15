@@ -18,6 +18,6 @@ class Category extends Model
     }
 
     public function goods() {
-        return $this->hasMany(Goods::class, 'category_id');
+        return $this->hasMany(Goods::class);
     }
 }
