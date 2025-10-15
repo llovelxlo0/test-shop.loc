@@ -38,7 +38,6 @@ class CartService
                 'quantity' => $quantity,
                 'price' => $product->price,
                 ]);
-                //dd('After create', CartItem::where('user_id', Auth::id())->get()->toArray());
             }
         } else {
             // Логика для неавторизованных пользователей (сессия)
@@ -117,7 +116,6 @@ class CartService
             });
         } else {
             $session = session()->get('cart', []);
-            //dd($session);
             return collect($session)->map(function($ci) {
                 $product = Goods::find($ci['goods_id']);
                 if (!$product) return null;
@@ -161,7 +159,6 @@ class CartService
                 'quantity' => $quantity,
                 'price' => $product->price,
             ]);
-            //dd('After create', CartItem::where('user_id', Auth::id())->get()->toArray());
         }
     }
 

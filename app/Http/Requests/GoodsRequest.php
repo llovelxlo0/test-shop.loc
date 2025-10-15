@@ -24,7 +24,6 @@ class GoodsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //'parent_id' => 'required|exists:categories,id',
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',

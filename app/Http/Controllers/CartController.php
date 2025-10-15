@@ -18,7 +18,6 @@ class CartController extends Controller
 
     public function viewCart()
     {
-        //dd(session()->all());
         $cartItems = $this->cartService->getCartContents();
         $total = $cartItems->sum(function($item) {
             return $item['price'] * $item['quantity'];
@@ -28,10 +27,8 @@ class CartController extends Controller
 
     public function add(CartRequest $request)
     {
-        //dd('Метод вызывается');
         $goodsId = $request->input('goods_id');
         $quantity = $request->input('quantity', 1);
-        //dd('Входящие данные', $goodsId, $quantity, Auth::check(), Auth::id(), session()->all());
         $this->cartService->addToCart($goodsId, $quantity);
         return redirect()->route('cart.view')->with('success', 'Товар добавлен в корзину');
     }

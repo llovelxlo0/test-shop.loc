@@ -20,7 +20,6 @@ class GoodsService
     {
         return Goods::create([
             'name' => $data['name'],
-            //'parent_id' => $data['parent_id'] ?? null,
             'category_id' => $data['category_id'] ?? null,
             'image' => $imagePath,
             'price' => $data['price'],
@@ -44,7 +43,6 @@ class GoodsService
     }
     public function deleteGoods(Goods $good)
     {
-        // Дополнительная логика проверки перед удалением, если необходимо
         return $good->delete();
     }
 }

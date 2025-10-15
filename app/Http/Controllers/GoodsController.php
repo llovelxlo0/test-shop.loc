@@ -20,7 +20,7 @@ class GoodsController extends Controller
     public function index() 
     {
         $goods = Goods::with('category')->paginate(15);
-        return view('goods.index', compact('goods' )); // categories/index.blade.php
+        return view('goods.index', compact('goods' )); 
     }
     public function create(Request $request) 
     {
@@ -46,7 +46,6 @@ class GoodsController extends Controller
     }
     public function edit(Goods $good, Request $request) 
     {
-        //$goods = Goods::findOrFail($id);
         $parents = $this->goodsService->getParentCategories();
 
         $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id', $good->category ? $good->category->parent_id : null);
@@ -76,7 +75,7 @@ class GoodsController extends Controller
     }
     public function FullInfo(Goods $goods) 
     {
-        return view('goods.fullinfo', compact('goods')); // goods/info.blade.php
+        return view('goods.fullinfo', compact('goods')); 
     }
 
     public function goods() 
@@ -87,6 +86,6 @@ class GoodsController extends Controller
         foreach ($parents as $parent) {
             $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
         }
-        return view('Goods', compact('tree')); // categories/goods.blade.php
+        return view('Goods', compact('tree')); 
     }
 }
