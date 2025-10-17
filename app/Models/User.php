@@ -54,4 +54,8 @@ class User extends Authenticatable
     {
         return $this->usertype === 'user';
     }
+    public function twoFactor()
+    {
+        return $this->hasOne(TwoFactor::class);
+    }
 }

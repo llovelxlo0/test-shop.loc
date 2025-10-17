@@ -1,49 +1,89 @@
 <x-layout>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Profile</title>
-    </head>
-    <body>
-        <h1>Profile Page</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+</head>
+<body>
 
-        @if (session('success'))
-            <div role="alert">
-                {{ session('success') }}
-            </div>
-        @endif
+    <h1>Настройки профиля</h1>
 
-        <form method="post" action="{{ route('profile.edit') }}">
+    {{-- Уведомления --}}
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="alert alert-error">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- === Редактирование профиля === --}}
+    <form method="post" action="{{ route('profile.edit') }}">
+        @csrf
+        @method('PUT')
+
+        <label for="name">Имя</label>
+        <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}">
+        @error('name') <small>{{ $message }}</small> @enderror
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}">
+        @error('email') <small>{{ $message }}</small> @enderror
+
+        <label for="password">Новый пароль (оставь пустым, чтобы не менять)</label>
+        <input type="password" id="password" name="password">
+        @error('password') <small>{{ $message }}</small> @enderror
+
+        <label for="password_confirmation">Подтверждение нового пароля</label>
+        <input type="password" id="password_confirmation" name="password_confirmation">
+
+        <button type="submit">Обновить профиль</button>
+    </form>
+
+    {{-- === Двухфакторная аутентификация === --}}
+    @if ($isTwoFactorEnabled)
+    <form method="post" action="{{ route('2fa.disable') }}">
+        @csrf
+        @method('DELETE')
+        <button type="submit" style="background:#dc2626;">Отключить 2FA</button>
+    </form>
+@else
+    @if (isset($qrCodeUrl) && $qrCodeUrl)
+        <p>📱 Отсканируйте QR:</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ urlencode($qrCodeUrl) }}&size=200x200" alt="QR Code">
+        <p>Или добавьте вручную ключ:</p>
+        <code>{{ $secret }}</code>
+
+        <form method="post" action="{{ route('2fa.verifySetup') }}">
             @csrf
-            @method('PUT')
-            <label for="name">Name</label>
-                <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}">
-                @error('name')
-                    <span role="alert">{{ $message }}</span>
-                @enderror
-            <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}">
-                @error('email')
-                    <span role="alert">{{ $message }}</span>
-                @enderror
-            <label for="password">New Password (leave blank to keep current password)</label>
-                <input type="password" id="password" name="password">
-                @error('password')
-                    <span role="alert">{{ $message }}</span>
-                @enderror
-            <label for="password_confirmation">Confirm New Password</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Confirm New Password">
-            <div>
-                <button type="submit">Update Profile</button>
-            </div>
-            <div>
-                <a href="{{ route('home') }}" class="btn btn-primary">Back</a>
-            </div>
+            <label for="otp">Введите код из приложения:</label>
+            <input type="text" name="otp" id="otp" maxlength="6" required>
+            <button type="submit">Подтвердить и включить 2FA</button>
         </form>
 
-        
-    </body>
-    </html>
+        <form method="post" action="{{ route('2fa.disable') }}">
+            @csrf
+            @method('DELETE')
+            <button type="submit" style="background:#6b7280;">Отмена</button>
+        </form>
+    @else
+        <form method="get" action="{{ route('2fa.setup') }}">
+            <button type="submit">Включить 2FA</button>
+        </form>
+    @endif
+@endif
+
+    <div style="margin-top:20px;">
+        <a href="{{ route('home') }}">⬅ Назад на главную</a>
+    </div>
+</body>
+</html>
 </x-layout>

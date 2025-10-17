@@ -7,20 +7,22 @@ use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Services\CartService;
+use App\Services\TwoFactorService;
 
 
 
 class AuthController extends Controller
 {
-    protected $cartService;
-    public function __construct(CartService $cartService)
+    protected TwoFactorService $twoFactorService;
+    protected CartService $cartService;
+    public function __construct(CartService $cartService, TwoFactorService $twoFactorService)
     {
         $this->cartService = $cartService;
+        $this->twoFactorService = $twoFactorService;
     }
     public function showLoginForm(): View {
         return view('Login');
     }
-
     public function processLogin(Request $request):RedirectResponse {
         $request->validate([
             'name' => 'required',
@@ -28,10 +30,20 @@ class AuthController extends Controller
         ]);
 
         $credentials = $request->only('name', 'password');
+
         if (Auth::attempt($credentials)) {
-            $this->cartService->mergeSessionCartToUser(Auth::id());
+            $user = Auth::user();
+
+            if ($this->twoFactorService->isEnabled($user)) {
+                Auth::logout();
+                session(['2fa:user:id' => $user->id]);
+                return redirect()->route('2fa.login.form');
+            }
+
+            $this->cartService->mergeSessionCartToUser($user->id);
             return redirect('/')->with('status', 'Login successful!');
         }
+
         return back()->withInput()->with('status', 'Invalid credentials.');
     }
     public function logout() : RedirectResponse {
@@ -39,4 +51,5 @@ class AuthController extends Controller
         return redirect('/')->with('status', 'Logged out successfully.');
     }
     
+
 }
