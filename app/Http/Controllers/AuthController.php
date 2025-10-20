@@ -28,15 +28,15 @@ class AuthController extends Controller
             'name' => 'required',
             'password' => 'required',
         ]);
-
+        
         $credentials = $request->only('name', 'password');
 
         if (Auth::attempt($credentials)) {
+            session()->regenerate();
             $user = Auth::user();
 
-            if ($this->twoFactorService->isEnabled($user)) {
-                Auth::logout();
-                session(['2fa:user:id' => $user->id]);
+            if ($user->twoFactor && $user->twoFactor->enabled) {
+                session(['2fa_pending' => $user->id]);
                 return redirect()->route('2fa.login.form');
             }
 

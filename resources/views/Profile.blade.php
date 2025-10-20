@@ -49,13 +49,20 @@
     </form>
 
     {{-- === Двухфакторная аутентификация === --}}
-    @if ($isTwoFactorEnabled)
-    <form method="post" action="{{ route('2fa.disable') }}">
+    @if($user->twoFactor && $user->twoFactor->enabled)
+    <h3>Двухфакторная аутентификация включена</h3>
+
+    <form method="POST" action="{{ route('2fa.disable') }}">
         @csrf
         @method('DELETE')
-        <button type="submit" style="background:#dc2626;">Отключить 2FA</button>
+        <label for="otp">Введите 2FA-код для отключения</label>
+        <input type="text" name="otp" id="otp" maxlength="6" required>
+        @error('otp')
+            <p style="color: red">{{ $message }}</p>
+        @enderror
+        <button type="submit">Отключить 2FA</button>
     </form>
-@else
+    @else
     @if (isset($qrCodeUrl) && $qrCodeUrl)
         <p>📱 Отсканируйте QR:</p>
         <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ urlencode($qrCodeUrl) }}&size=200x200" alt="QR Code">
@@ -74,12 +81,12 @@
             @method('DELETE')
             <button type="submit" style="background:#6b7280;">Отмена</button>
         </form>
-    @else
+        @else
         <form method="get" action="{{ route('2fa.setup') }}">
             <button type="submit">Включить 2FA</button>
         </form>
+        @endif
     @endif
-@endif
 
     <div style="margin-top:20px;">
         <a href="{{ route('home') }}">⬅ Назад на главную</a>

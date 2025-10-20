@@ -23,15 +23,21 @@ class TwoFactorLoginController extends Controller
     public function verify(Request $request)
     {
         
-        $user = User::find(session('2fa:user:id'));
-        if (!$user) {
-            return redirect()->route('login')->with('status', 'Session expired. Please login again.');
-        }
+        $user = User::find(session('2fa_pending'));
 
-        if ($this->service->verifyCode($user, $request->input('otp'))) {
+    if (!$user) {
+        return redirect()->route('login')->with('status', 'Session expired. Please login again.');
+    }
+
+    if ($this->service->verifyCode($user, $request->input('otp'))) {
+        session()->forget('2fa_pending');
+        session()->put('2fa_passed', true);
+        
         Auth::login($user);
-        session()->forget('2fa:user:id');
+
         return redirect()->intended('/')->with('status', 'Login successful!');
-        }
+    }
+
+    return back()->withErrors(['otp' => 'Неверный код']);
     }
 }

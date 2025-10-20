@@ -88,7 +88,7 @@ class ProfileController extends Controller
         $request->validate([
             'otp' => 'required|string',
         ]);
-        if ($this->twoFactorService->verifyCode($user, $request->input('otp'))) {
+        if ($this->twoFactorService->verifySetupCode($user, $request->input('otp'))) {
             $this->twoFactorService->enable($user);
             session()->forget(['2fa_secret', '2fa_qrCodeUrl']);
             return redirect()->route('profile')->with('success', 'Two-Factor Authentication enabled successfully!');
@@ -99,7 +99,7 @@ class ProfileController extends Controller
     public function disable(Request $request)
     {
         $user = Auth::user();
-        $this->twoFactorService->disable($user);
+        $this->twoFactorService->disable($user, $request->input('otp'));
         session()->forget(['2fa_secret', '2fa_qrCodeUrl']);
         return redirect()->route('profile')->with('success', 'Two-Factor Authentication disabled successfully!');
     }

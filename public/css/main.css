@@ -18,6 +18,9 @@ ul li a {
 ul li a:hover {
     opacity: 1;
 }
-.navbar {
-    position:static;
+.body {
+  padding-top: 26px; /* высота navbar */
+}
+.container {
+    margin-top: 20px;
 }

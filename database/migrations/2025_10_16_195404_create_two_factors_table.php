@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('two_factors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->unique();
-            $table->string('secret');
+            $table->string('secret')->nullable();
             $table->boolean('enabled')->default(false);
             $table->timestamps();
         });

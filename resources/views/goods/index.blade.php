@@ -10,11 +10,6 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-
-    @if(Auth::check() && Auth::user()->isAdmin())
-        <a href="{{ route('goods.create') }}" class="btn btn-primary">Добавить товар</a>
-    @endif
-
     <table class="table mt-3">
         <thead>
             <tr>

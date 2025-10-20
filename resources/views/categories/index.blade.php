@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
 <div class="container">
     <h1>Категории</h1>
     @if(Auth::check() && Auth::user()->isAdmin())
@@ -22,7 +21,7 @@
     <tbody>
         @foreach($categories as $category)
         <tr>
-            <td>{{ $category->id }}</td>
+        <td>{{ $category->id }}</td>
           <td>{{ $category->name }}</td>
           <td>{{optional($category->parent)->name ?? '—'}}</td>
           @if(Auth::check() && Auth::user()->isAdmin())
@@ -39,4 +38,5 @@
         @endforeach
 </tbody>
 </table>
-</div>"
+</div>
+@endsection

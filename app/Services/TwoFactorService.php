@@ -16,25 +16,42 @@ class TwoFactorService
     public function generateSecret(User $user): string
     {
         $secret = $this->google2fa->generateSecretKey();
-        $user->twoFactor()->updateOrCreate([
-            'user_id' => $user->id,
-            'secret' => $secret,
-            'enabled' => false,
-        ]);
+        $user->twoFactor()->updateOrCreate(
+            ['user_id' => $user->id],
+            ['secret' => $secret, 'enabled' => false]
+        );
         return $secret;
+    }
+    public function verifySetupCode(User $user, string $code)
+    {
+        $twoFactor = $user->twoFactor;
+        if (!$twoFactor) {
+            return false;
+        }
+        return $this->google2fa->verifyKey($twoFactor->secret, $code);
     }
     public function verifyCode(User $user, string $code): bool
     {
-        $secret = $user->twoFactor->secret;
-        return $this->google2fa->verifyKey($secret, $code);
+        $twoFactor = $user->twoFactor;
+        if (!$twoFactor || !$twoFactor->enabled) {
+            return false;
+        }
+        return $this->google2fa->verifyKey($twoFactor->secret, $code);
     }
     public function enable(User $user)
     {
         $user->twoFactor->update(['enabled' => true]);
     }
-    public function disable(User $user)
+    public function disable(User $user, string $code)
     {
-        $user->twoFactor->update(['enabled' => false]);
+        if (!$this->verifyCode($user, $code)) {
+            return false;
+        }
+        $user->twoFactor->update([
+            'enabled' => false,
+            'secret' => null,
+        ]);
+        return true;
     }
     public function isEnabled(User $user): bool
     {
