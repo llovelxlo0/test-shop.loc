@@ -17,10 +17,42 @@ class GoodsController extends Controller
         $this->middleware('auth')->except(['index', 'show']);
         $this->goodsService = $goodsService;
     }
-    public function index() 
+    public function index(Request $request) 
     {
-        $goods = Goods::with('category')->paginate(15);
-        return view('goods.index', compact('goods' )); 
+        $query = Goods::query();
+
+        // 🔹 Если выбран родитель
+        if ($request->filled('parent_id')) {
+            $parentId = $request->input('parent_id');
+
+            // Находим все подкатегории этого родителя
+            $childIds = Category::where('parent_id', $parentId)->pluck('id')->toArray();
+
+            // Показываем товары из подкатегорий или самого родителя
+            $query->whereIn('category_id', array_merge([$parentId], $childIds));
+        }
+
+        // 🔹 Если выбрана подкатегория
+        if ($request->filled('subcategory_id')) {
+            $query->where('category_id', $request->input('subcategory_id'));
+        }
+
+        $goods = $query->get();
+
+        // 🔸 Формируем дерево категорий для фильтра
+        $parents = Category::whereNull('parent_id')->get();
+        $tree = [];
+        foreach ($parents as $parent) {
+            $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
+        }
+
+        // 🔹 Если запрос AJAX → возвращаем JSON (для JS фильтра)
+        if ($request->ajax()) {
+            return response()->json($goods);
+        }
+
+        // 🔹 Обычный HTML-рендер
+        return view('Goods', compact('goods', 'tree'));
     }
     public function create(Request $request) 
     {
@@ -78,14 +110,38 @@ class GoodsController extends Controller
         return view('goods.fullinfo', compact('goods')); 
     }
 
-    public function goods() 
+    public function goods(Request $request) 
     {
-        $parents = Category::whereNull('parent_id')->get();
+        // Родительские категории
+    $parents = Category::whereNull('parent_id')->get();
 
-        $tree = [];
-        foreach ($parents as $parent) {
-            $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
-        }
-        return view('Goods', compact('tree')); 
+    // Формируем дерево родитель → подкатегории
+    $tree = [];
+    foreach ($parents as $parent) {
+        $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
     }
+
+    // Фильтрация товаров
+    $query = Goods::query();
+
+    if ($request->ajax()) {
+        // Если запрос AJAX — возвращаем JSON
+        if ($request->filled('parent_id')) {
+            $childIds = Category::where('parent_id', $request->parent_id)->pluck('id');
+            $query->whereIn('category_id', $childIds);
+        }
+        if ($request->filled('subcategory_id')) {
+            $query->where('category_id', $request->subcategory_id);
+        }
+
+        $goods = $query->get();
+        return response()->json($goods);
+    }
+
+    // При обычной загрузке страницы — просто все товары
+    $goods = Goods::latest()->get();
+
+    return view('Goods', compact('tree', 'goods')); 
+    }
+    
 }

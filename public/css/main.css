@@ -24,3 +24,10 @@ ul li a:hover {
 .container {
     margin-top: 20px;
 }
+button.btn {
+    transition: all 0.2s ease;
+}
+button.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}

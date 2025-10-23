@@ -70,4 +70,9 @@ class CategoryController extends Controller
     {
         return view('categories.show', compact('category'));
     }
+    public function getSubcategories(Category $parent)
+    {
+        $subcategories = $this->categoryService->getChildCategories($parent->id);
+        return response()->json($subcategories);
+    }
 }
