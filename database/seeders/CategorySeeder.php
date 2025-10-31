@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Category;
+use App\Models\Attribute;
+use Dom\Attr;
 
 class CategorySeeder extends Seeder
 {
@@ -32,5 +34,43 @@ class CategorySeeder extends Seeder
             ]);
         }    
         }
+        $motherboard = Category::where('name', 'Motherboard')->first();
+        $socket = Attribute::firstOrCreate(['name' => 'Socket']);
+        $chipset = Attribute::firstOrCreate(['name' => 'Chipset']);
+        $formFactor = Attribute::firstOrCreate(['name' => 'Form Factor']);
+        $motherboard->attributes()->sync([$socket->id, $chipset->id, $formFactor->id]);
+
+        $cpu = Category::where('name', 'CPU')->first();
+        $cores = Attribute::firstOrCreate(['name' => 'Cores']);
+        $threads = Attribute::firstOrCreate(['name' => 'Threads']);
+        $tdp = Attribute::firstOrCreate(['name' => 'TDP']);
+        $cpu->attributes()->sync([$socket->id, $cores->id, $threads->id, $tdp->id]);
+
+        $ram = Category::where('name', 'RAM')->first();
+        $gb = Attribute::firstOrCreate(['name' => 'GB']);
+        $type = Attribute::firstOrCreate(['name' => 'Type']);
+        $speed = Attribute::firstOrCreate(['name' => 'Speed']);
+        $ram->attributes()->sync([$gb->id, $type->id, $speed->id]);
+
+        $gpu = Category::where('name', 'GPU')->first();
+        $vram = Attribute::firstOrCreate(['name' => 'VRAM']);
+        $gpu->attributes()->sync([$vram->id, $tdp->id]);
+
+        $storage = Category::where('name', 'Storage')->first();
+        $capacity = Attribute::firstOrCreate(['name' => 'Capacity']);
+        $storageType = Attribute::firstOrCreate(['name' => 'Type']);
+        $storage->attributes()->sync([$capacity->id, $storageType->id]);
+
+        $powerSupply = Category::where('name', 'Power Supply')->first();
+        $wattage = Attribute::firstOrCreate(['name' => 'Wattage']);
+        $powerSupply->attributes()->sync([$wattage->id]);
+
+        $phones = Category::where('name', 'phones')->first();
+        $screenSize = Attribute::firstOrCreate(['name' => 'Screen Size']);
+        $battery = Attribute::firstOrCreate(['name' => 'Battery']);
+        $color = Attribute::firstOrCreate(['name' => 'Color']);
+        $phones->attributes()->sync([$screenSize->id, $battery->id, $color->id]);
+        
+
     }
 }

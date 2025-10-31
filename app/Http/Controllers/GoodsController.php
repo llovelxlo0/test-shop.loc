@@ -21,7 +21,7 @@ class GoodsController extends Controller
     {
         $query = Goods::query();
 
-        // 🔹 Если выбран родитель
+        //  Если выбран родитель
         if ($request->filled('parent_id')) {
             $parentId = $request->input('parent_id');
 
@@ -32,39 +32,45 @@ class GoodsController extends Controller
             $query->whereIn('category_id', array_merge([$parentId], $childIds));
         }
 
-        // 🔹 Если выбрана подкатегория
+        //  Если выбрана подкатегория
         if ($request->filled('subcategory_id')) {
             $query->where('category_id', $request->input('subcategory_id'));
         }
 
         $goods = $query->get();
 
-        // 🔸 Формируем дерево категорий для фильтра
+        //  Формируем дерево категорий для фильтра
         $parents = Category::whereNull('parent_id')->get();
         $tree = [];
         foreach ($parents as $parent) {
             $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
         }
 
-        // 🔹 Если запрос AJAX → возвращаем JSON (для JS фильтра)
+        //  Если запрос AJAX → возвращаем JSON (для JS фильтра)
         if ($request->ajax()) {
             return response()->json($goods);
         }
 
-        // 🔹 Обычный HTML-рендер
+        //  Обычный HTML-рендер
         return view('Goods', compact('goods', 'tree'));
     }
     public function create(Request $request) 
     {
         $parents = $this->goodsService->getParentCategories();
-
         $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id');
 
         $childCategories = collect();
+        $categoryAttributes = collect();
+
         if ($request->filled('parent_id')) {
-            $childCategories = $this->goodsService->getChildCategories($request->parent_id);
+        $childCategories = $this->goodsService->getChildCategories($request->parent_id);
         }
-        return view('goods.create', compact('parents', 'childCategories', 'selectedParentId'));
+
+        if ($request->filled('category_id')) {
+        $category = Category::with('attributes')->find($request->category_id);
+        $categoryAttributes = $category?->attributes ?? collect();
+        }
+        return view('goods.create', compact('parents', 'childCategories', 'selectedParentId', 'categoryAttributes'));
     }
     public function store(GoodsRequest $request) 
     {
@@ -105,8 +111,15 @@ class GoodsController extends Controller
         $this->goodsService->deleteGoods($good);
         return redirect()->route('goods.index')->with('success', 'Товар успешно удален.');
     }
+    public function getSubcategories($parentId)
+    {
+        $childCategories = app(\App\Services\CategoryService::class)->getChildCategories($parentId);
+        return response()->json($childCategories);
+    }
+
     public function FullInfo(Goods $goods) 
     {
+        $goods = Goods::with('attributes')->findOrFail($goods->id);
         return view('goods.fullinfo', compact('goods')); 
     }
 

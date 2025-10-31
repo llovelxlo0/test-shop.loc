@@ -31,7 +31,17 @@
             <p class="fs-4 fw-bold text-success mb-4">{{ number_format($goods->price, 2) }} ₴</p>
 
             <p><strong>Количество на складе:</strong> {{ $goods->stock ?? '—' }}</p>
-
+            {{-- EAV --}}
+            @if($goods->attributes && $goods->attributes->count())
+                <h5 class="mt-4">Характеристики</h5>
+                <ul class="list-group mb-4">
+                    @foreach($goods->attributes as $attribute)
+                        <li class="list-group-item">
+                            <strong>{{ $attribute->name }}:</strong> {{ $attribute->pivot->value }}
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
             {{-- Кнопка добавления в корзину --}}
             @if($goods->stock > 0)
                 <form action="{{ route('cart.add') }}" method="POST" class="d-inline">
@@ -49,7 +59,7 @@
             @if(Auth::check() && Auth::user()->isAdmin())
                 <div class="mt-4">
                     <a href="{{ route('goods.edit', $goods->id) }}" class="btn btn-warning me-2">✏️ Редактировать</a>
-                    <form action="{{ route('goods.destroy', $goods->id) }}" method="POST" style="display:inline-block;">
+                    <form action="{{ route('goods.destroy', $goods->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить товар?')">
@@ -58,8 +68,6 @@
                     </form>
                 </div>
             @endif
-
-            {{-- Кнопка "Назад" --}}
             <div class="mt-4">
                 <a href="{{ route('goods.index') }}" class="btn btn-secondary">← Назад к каталогу</a>
             </div>

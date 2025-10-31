@@ -29,7 +29,12 @@ class GoodsRequest extends FormRequest
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'stock' => 'required|integer|min:0'
+            'stock' => 'required|integer|min:0',
+
+            //EAV
+            'attributes' => 'array|nullable',
+            'attributes.*.name' => 'nullable|string|max:255',
+            'attributes.*.value' => 'nullable|string|max:255',
         ];
     }
 }

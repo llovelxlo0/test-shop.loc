@@ -28,6 +28,7 @@ Route::post('/2fa/login', [TwoFactorLoginController::class, 'verify'])->name('2f
 
 // Категории и товары
 Route::resource('categories', CategoryController::class);
+Route::get('/categories/{parent}/children', [GoodsController::class, 'getSubcategories'])->name('categories.children');
 Route::resource('goods', GoodsController::class);
 Route::get('goods/{goods}/info', [GoodsController::class, 'FullInfo'])->name('goods.info');
 

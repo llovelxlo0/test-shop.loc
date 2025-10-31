@@ -26,4 +26,8 @@ class Goods extends Model
     {
         return $this->hasMany(CartItem::class, 'goods_id');
     }
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'attribute_values')->withPivot('value')->withTimestamps();
+    }
 }
