@@ -15,6 +15,6 @@ class Attribute extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'category_attributes');
+        return $this->belongsToMany(Category::class, 'category_attributes')->withPivot('is_comparable')->withTimestamps();
     }
 }

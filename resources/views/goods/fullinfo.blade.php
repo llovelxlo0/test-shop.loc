@@ -54,6 +54,27 @@
             @else
                 <p class="text-danger">Нет в наличии</p>
             @endif
+            @if(isset($relatedGoods) && $relatedGoods->isNotEmpty())
+        <hr>
+        <h4 class="mt-4">Похожие товары</h4>
+        <div class="row">
+            @foreach($relatedGoods as $item)
+                <div class="col-md-2 mb-3">
+                    <a href="{{ route('goods.info', $item->id) }}" class="text-decoration-none text-dark">
+                        <div class="card shadow-sm h-100">
+                            @if($item->image)
+                                <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
+                            @endif
+                            <div class="card-body text-center p-2">
+                                <h6 class="card-title text-truncate" title="{{ $item->name }}">{{ $item->name }}</h6>
+                                <p class="text-success fw-bold mb-0">{{ number_format($item->price, 2) }} ₴</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    @endif
 
             {{-- Кнопки админа --}}
             @if(Auth::check() && Auth::user()->isAdmin())

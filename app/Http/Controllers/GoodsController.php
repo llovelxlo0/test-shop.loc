@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Goods;
 use App\Services\GoodsService;
+use App\Services\RelatedProductService;
 use App\Http\Requests\GoodsRequest;
 
 use Illuminate\Http\Request;
@@ -12,10 +13,12 @@ use Illuminate\Http\Request;
 class GoodsController extends Controller
 {
     protected $goodsService;
-    public function __construct(GoodsService $goodsService)
+    protected $relatedProductService;
+    public function __construct(GoodsService $goodsService, RelatedProductService $relatedProductService)
     {
         $this->middleware('auth')->except(['index', 'show']);
         $this->goodsService = $goodsService;
+        $this->relatedProductService = $relatedProductService;
     }
     public function index(Request $request) 
     {
@@ -119,8 +122,9 @@ class GoodsController extends Controller
 
     public function FullInfo(Goods $goods) 
     {
-        $goods = Goods::with('attributes')->findOrFail($goods->id);
-        return view('goods.fullinfo', compact('goods')); 
+        $goods = Goods::with(['attributes', 'category'])->findOrFail($goods->id);
+        $relatedGoods = $this->relatedProductService->getRelatedProducts($goods);
+        return view('goods.fullinfo', compact('goods', 'relatedGoods')); 
     }
 
     public function goods(Request $request) 
