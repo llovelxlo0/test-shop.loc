@@ -71,7 +71,7 @@ class GoodsController extends Controller
 
         if ($request->filled('category_id')) {
         $category = Category::with('attributes')->find($request->category_id);
-        $categoryAttributes = $category?->attributes ?? collect();
+        $categoryAttributes = $category?->attributes()->get() ?? collect();
         }
         return view('goods.create', compact('parents', 'childCategories', 'selectedParentId', 'categoryAttributes'));
     }
