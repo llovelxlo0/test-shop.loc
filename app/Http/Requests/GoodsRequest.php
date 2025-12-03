@@ -35,6 +35,12 @@ class GoodsRequest extends FormRequest
             'attributes' => 'array|nullable',
             'attributes.*.name' => 'nullable|string|max:255',
             'attributes.*.value' => 'nullable|string|max:255',
+
+            // Reviews
+            'reviews' => 'array|nullable',
+            'reviews.*.rating' => 'required|integer|min:1|max:5',
+            'reviews.*.comment' => 'nullable|string',
+            'reviews.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ];
     }
 }

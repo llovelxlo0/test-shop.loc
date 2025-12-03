@@ -89,6 +89,95 @@
                     </form>
                 </div>
             @endif
+
+            @auth
+            <hr class="mt-4">
+            <h5>Оставить отзыв</h5>
+            @if(session('succsess'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <form action="{{ route('goods.reviews.store', $goods->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Рейтинг (1-5):</label>
+                    <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+                </div>
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Комментарий:</label>
+                    <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">Изображение (необязательно):</label>
+                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+            </form>
+            @endauth
+            {{-- Список отзывов --}}
+            @if($goods->reviews->count())
+                <hr class="mt-4">
+                <h5>Отзывы о товаре</h5>
+                @foreach($goods->reviews->sortByDesc('created_at') as $review)
+            <div class="border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between">
+                <strong>{{ $review->user->name ?? 'Пользователь' }}</strong>
+                <small class="text-muted">
+                    {{ $review->created_at->format('d.m.Y H:i') }}
+                </small>
+            </div>
+            @auth
+                @if(Auth::id() === $review->user_id)
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('reviews.edit', $review->id) }}" class="btn btn-sm btn-outline-primary">
+                            Редактировать
+                        </a>
+
+                        <form action="{{ route('reviews.destroy', $review->id) }}" method="POST"
+                              onsubmit="return confirm('Удалить отзыв?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            @endauth
+            <div>
+                Рейтинг:
+                @for ($i = 1; $i <= 5; $i++)
+                    @if ($i <= $review->rating)
+                        <span class="text-warning">★</span>
+                    @else
+                        <span class="text-secondary">☆</span>
+                    @endif
+                @endfor
+            </div>
+
+            <p class="mt-2 mb-2">{{ $review->comment }}</p>
+
+            @if($review->image)
+                <div class="mt-2">
+                    <img src="{{ asset('storage/' . $review->image) }}" 
+                         alt="Фото отзыва"
+                         class="img-fluid rounded" style="max-width: 200px;">
+                </div>
+            @endif
+        </div>
+        @endforeach
+        @else
+            <hr class="mt-4">
+            <p class="text-muted">Пока нет ни одного отзыва. Будьте первым!</p>
+        @endif
             <div class="mt-4">
                 <a href="{{ route('goods.index') }}" class="btn btn-secondary">← Назад к каталогу</a>
             </div>

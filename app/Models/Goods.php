@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
+use App\Models\CartItem;
+use App\Models\Attribute;
+use App\Models\Review;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Goods extends Model
@@ -29,5 +32,9 @@ class Goods extends Model
     public function attributes()
     {
         return $this->belongsToMany(Attribute::class, 'attribute_values')->withPivot('value')->withTimestamps();
+    }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'goods_id');
     }
 }

@@ -9,6 +9,8 @@ use App\Http\Controllers\GoodsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TwoFactorLoginController;
+use App\Http\Controllers\ReviewController;
+use App\Models\Review;
 
 // Главная страница
 Route::get('/', function () {
@@ -31,6 +33,10 @@ Route::resource('categories', CategoryController::class);
 Route::get('/categories/{parent}/children', [GoodsController::class, 'getSubcategories'])->name('categories.children');
 Route::resource('goods', GoodsController::class);
 Route::get('goods/{goods}/info', [GoodsController::class, 'FullInfo'])->name('goods.info');
+Route::post('goods/{goods}/reviews', [ReviewController::class, 'store'])->middleware('auth')->name('goods.reviews.store');
+Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->middleware('auth')->name('reviews.edit');
+Route::put('/reviews/{review}', [ReviewController::class, 'update'])->middleware('auth')->name('reviews.update');
+Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->middleware('auth')->name('reviews.destroy');
 
 // Корзина и заказы
 Route::get('cart', [CartController::class, 'viewCart'])->name('cart.view');
@@ -44,7 +50,6 @@ Route::get('order/confirmation/{order}', [OrderController::class, 'confirmation'
 Route::prefix('profile')->middleware(['auth', 'check2fa'])->group(function () {
     Route::get('/', [ProfileController::class, 'showProfile'])->name('profile');
     Route::put('/', [ProfileController::class, 'editProfile'])->name('profile.edit');
-
     Route::get('2fa/setup', [ProfileController::class, 'setupTwoFactor'])->name('2fa.setup');
     Route::post('2fa/verify', [ProfileController::class, 'verify'])->name('2fa.verifySetup');
     Route::delete('2fa/disable', [ProfileController::class, 'disable'])->name('2fa.disable');

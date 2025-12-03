@@ -16,7 +16,7 @@ class GoodsController extends Controller
     protected $relatedProductService;
     public function __construct(GoodsService $goodsService, RelatedProductService $relatedProductService)
     {
-        $this->middleware('auth')->except(['index', 'show']);
+        $this->middleware('auth')->except(['index', 'show', 'FullInfo']);
         $this->goodsService = $goodsService;
         $this->relatedProductService = $relatedProductService;
     }
@@ -122,7 +122,7 @@ class GoodsController extends Controller
 
     public function FullInfo(Goods $goods) 
     {
-        $goods = Goods::with(['attributes', 'category'])->findOrFail($goods->id);
+        $goods = Goods::with(['attributes', 'category', 'reviews.user'])->findOrFail($goods->id);
         $relatedGoods = $this->relatedProductService->getRelatedProducts($goods);
         return view('goods.fullinfo', compact('goods', 'relatedGoods')); 
     }
