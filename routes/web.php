@@ -10,6 +10,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\TwoFactorLoginController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\WishlistController;
 use App\Models\Review;
 
 // Главная страница
@@ -53,4 +54,5 @@ Route::prefix('profile')->middleware(['auth', 'check2fa'])->group(function () {
     Route::get('2fa/setup', [ProfileController::class, 'setupTwoFactor'])->name('2fa.setup');
     Route::post('2fa/verify', [ProfileController::class, 'verify'])->name('2fa.verifySetup');
     Route::delete('2fa/disable', [ProfileController::class, 'disable'])->name('2fa.disable');
+    Route::post('/wishlist/{goods}', [WishlistController::class, 'toggleWishlist'])->name('wishlist.toggle');
 });

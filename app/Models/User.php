@@ -58,4 +58,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(TwoFactor::class);
     }
+    public function wishlist()
+    {
+        return $this->belongsToMany(Goods::class, 'wishlist', 'user_id', 'goods_id')->withTimestamps();
+    }
 }

@@ -22,7 +22,7 @@ class ProfileController extends Controller
         $this->twoFactorService = $twoFactorService;
     }
     public function showProfile() {
-        $user = Auth::user();
+        $user = User::with('wishlist.category')->find(Auth::id());
         $isTwoFactorEnabled = $user->twoFactor && $user->twoFactor->enabled;
         $secret = session('2fa_secret');
         $qrCodeUrl = session('2fa_qrCodeUrl');

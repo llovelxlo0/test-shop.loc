@@ -42,6 +42,13 @@
                     @endforeach
                 </ul>
             @endif
+            <button 
+                type="button"
+                class="btn btn-outline-warning wishlist-btn"
+                data-url="{{ route('wishlist.toggle', $goods->id) }}"
+            >
+                ⭐ В избранное
+            </button>
             {{-- Кнопка добавления в корзину --}}
             @if($goods->stock > 0)
                 <form action="{{ route('cart.add') }}" method="POST" class="d-inline">
@@ -184,4 +191,59 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.wishlist-btn');
+
+    if (!buttons.length) {
+        // для дебага
+        console.log('wishlist: нет кнопок на странице');
+        return;
+    }
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const url = btn.dataset.url;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                // Если не авторизован — Laravel вернёт 302 на /login
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                if (!response.ok) {
+                    console.error('Wishlist error:', response.status);
+                    alert('Ошибка при добавлении в избранное');
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Wishlist response:', data);
+
+                if (data.status === 'added') {
+                    btn.textContent = '❤️ В избранном';
+                    btn.classList.remove('btn-outline-warning');
+                    btn.classList.add('btn-danger');
+                } else if (data.status === 'removed') {
+                    btn.textContent = '⭐ В избранное';
+                    btn.classList.add('btn-outline-warning');
+                    btn.classList.remove('btn-danger');
+                }
+            } catch (e) {
+                console.error('Wishlist exception:', e);
+                alert('Произошла ошибка. Проверь консоль.');
+            }
+        });
+    });
+});
+</script>
 @endsection

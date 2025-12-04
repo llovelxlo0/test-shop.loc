@@ -37,4 +37,8 @@ class Goods extends Model
     {
         return $this->hasMany(Review::class, 'goods_id');
     }
+    public function wishlistedByUsers()
+    {
+        return $this->belongsToMany(Goods::class, 'wishlist', 'user_id', 'goods_id')->withTimestamps();
+    }
 }

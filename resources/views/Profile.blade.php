@@ -87,6 +87,48 @@
         </form>
         @endif
     @endif
+    {{-- === Избранные товары === --}}
+    <hr style="margin: 30px 0;">
+
+    <h2>Мои избранные товары</h2>
+
+    @if($user->wishlist->count())
+        <ul style="list-style: none; padding-left: 0;">
+            @foreach($user->wishlist as $good)
+                <li style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                    {{-- Картинка товара (если есть) --}}
+                    @if($good->image)
+                        <img src="{{ asset('storage/' . $good->image) }}"
+                             alt="{{ $good->name }}"
+                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                    @endif
+
+                    <div>
+                        {{-- Название товара — клик ведёт на полную информацию --}}
+                        <a href="{{ route('goods.info', $good->id) }}">
+                            {{ $good->name }}
+                        </a>
+
+                        {{-- Цена --}}
+                        <div>
+                            <strong>{{ number_format($good->price, 2) }} ₴</strong>
+                        </div>
+
+                        {{-- Категория, если нужна --}}
+                        @if($good->category)
+                            <small style="color: #6b7280;">
+                                Категория:
+                                {{ optional($good->category->parent)->name ? optional($good->category->parent)->name . ' → ' : '' }}
+                                {{ $good->category->name }}
+                            </small>
+                        @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <p class="text-muted">У вас пока нет избранных товаров.</p>
+    @endif
 
     <div style="margin-top:20px;">
         <a href="{{ route('home') }}">⬅ Назад на главную</a>
