@@ -65,12 +65,31 @@ class CategorySeeder extends Seeder
         $wattage = Attribute::firstOrCreate(['name' => 'Wattage']);
         $powerSupply->attributes()->sync([$wattage->id]);
 
-        $phones = Category::where('name', 'phones')->first();
+        $iphone = Category::where('name', 'iPhone')->first();
         $screenSize = Attribute::firstOrCreate(['name' => 'Screen Size']);
         $battery = Attribute::firstOrCreate(['name' => 'Battery']);
         $color = Attribute::firstOrCreate(['name' => 'Color']);
-        $phones->attributes()->sync([$screenSize->id, $battery->id, $color->id]);
-        
+        $iphone->attributes()->sync([$screenSize->id, $battery->id, $color->id]);
 
+        
+        $samsung = Category::where('name', 'Samsung')->first();
+        $screenSize = Attribute::firstOrCreate(['name' => 'Screen Size']);
+        $battery = Attribute::firstOrCreate(['name' => 'Battery']);
+        $color = Attribute::firstOrCreate(['name' => 'Color']);
+        $samsung->attributes()->sync([$screenSize->id, $battery->id, $color->id]);
+
+        
+        $xiaomi = Category::where('name', 'Xiaomi')->first();
+        $screenSize = Attribute::firstOrCreate(['name' => 'Screen Size']);
+        $battery = Attribute::firstOrCreate(['name' => 'Battery']);
+        $color = Attribute::firstOrCreate(['name' => 'Color']);
+        $xiaomi->attributes()->sync([$screenSize->id, $battery->id, $color->id]);
+
+        
+        $nokia = Category::where('name', 'Nokia')->first();
+        $screenSize = Attribute::firstOrCreate(['name' => 'Screen Size']);
+        $battery = Attribute::firstOrCreate(['name' => 'Battery']);
+        $color = Attribute::firstOrCreate(['name' => 'Color']);
+        $nokia->attributes()->sync([$screenSize->id, $battery->id, $color->id]);
     }
 }
