@@ -24,7 +24,7 @@
         {{-- Категория --}}
         <div class="mb-3">
             <label for="parent_id" class="form-label">Родительская категория</label>
-            <select name="parent_id" id="parent_id" class="form-select" disabled>
+            <select name="parent_id" id="parent_id" class="form-select">
                 @foreach($parents as $id => $name)
                     <option value="{{ $id }}" {{ $selectedParentId == $id ? 'selected' : '' }}>
                         {{ $name }}
@@ -36,7 +36,7 @@
         {{-- Подкатегория --}}
         <div class="mb-3">
             <label for="category_id" class="form-label">Подкатегория</label>
-            <select name="category_id" id="category_id" class="form-select" disabled>
+            <select name="category_id" id="category_id" class="form-select">
                 @foreach($childCategories as $id => $name)
                     <option value="{{ $id }}" {{ $good->category_id == $id ? 'selected' : '' }}>
                         {{ $name }}
@@ -79,43 +79,46 @@
             <input type="file" name="image" class="form-control" accept="image/*">
         </div>
 
-        {{--  ФИКСИРОВАННЫЕ характеристики --}}
+{{--  ФИКСИРОВАННЫЕ характеристики --}}
+@php
+    // безопасно получаем атрибуты категории
+    $categoryAttributes = optional($good->category)->attributes ?? collect();
+@endphp
+
+@if($categoryAttributes->isNotEmpty())
+    <h5 class="mt-4">Характеристики подкатегории</h5>
+    @foreach($categoryAttributes as $attr)
         @php
-            $categoryAttributes = $good->category->attributes ?? collect();
+            $existingValue = $good->attributes->firstWhere('id', $attr->id)?->pivot->value;
         @endphp
-
-        @if($categoryAttributes->isNotEmpty())
-            <h5 class="mt-4">Характеристики подкатегории</h5>
-            @foreach($categoryAttributes as $attr)
-                @php
-                    $existingValue = $good->attributes->firstWhere('id', $attr->id)?->pivot->value;
-                @endphp
-                <div class="mb-2">
-                    <label>{{ ucfirst($attr->name) }}</label>
-                    <input type="text" name="attributes[{{ $attr->id }}][value]"
-                           value="{{ old("attributes.{$attr->id}.value", $existingValue) }}"
-                           class="form-control" placeholder="Введите значение">
-                </div>
-            @endforeach
-        @endif
-
-        {{--  КАСТОМНЫЕ характеристики --}}
-        <div id="custom-attributes-container" class="mt-4">
-            <h5>Дополнительные характеристики</h5>
-            <button type="button" id="add-custom-attribute" class="btn btn-outline-primary btn-sm mb-2">
-                + Добавить характеристику
-            </button>
-
-            @foreach($good->attributes->filter(fn($a) => !$categoryAttributes->contains('id', $a->id)) as $custom)
-                <div class="attribute-row mb-2 d-flex">
-                    <input type="text" name="attributes[new_{{ $loop->index }}][name]"
-                           value="{{ $custom->name }}" class="form-control me-2">
-                    <input type="text" name="attributes[new_{{ $loop->index }}][value]"
-                           value="{{ $custom->pivot->value }}" class="form-control">
-                    <button type="button" class="btn btn-danger btn-sm ms-2 remove-attribute">🗑</button>
-                </div>
-            @endforeach
+        <div class="mb-2">
+            <label>{{ ucfirst($attr->name) }}</label>
+            <input type="text" name="attributes[{{ $attr->id }}][value]"
+                   value="{{ old("attributes.{$attr->id}.value", $existingValue) }}"
+                   class="form-control" placeholder="Введите значение">
         </div>
+    @endforeach
+@endif
+
+{{--  КАСТОМНЫЕ характеристики --}}
+<div id="custom-attributes-container" class="mt-4">
+    <h5>Дополнительные характеристики</h5>
+    <button type="button" id="add-custom-attribute" class="btn btn-outline-primary btn-sm mb-2">
+        + Добавить характеристику
+    </button>
+
+    @foreach($good->attributes->filter(function ($a) use ($categoryAttributes) {
+        return !$categoryAttributes->contains('id', $a->id);
+    }) as $custom)
+        <div class="attribute-row mb-2 d-flex">
+            <input type="text" name="attributes[new_{{ $loop->index }}][name]"
+                   value="{{ $custom->name }}" class="form-control me-2">
+            <input type="text" name="attributes[new_{{ $loop->index }}][value]"
+                   value="{{ $custom->pivot->value }}" class="form-control">
+            <button type="button" class="btn btn-danger btn-sm ms-2 remove-attribute">🗑</button>
+        </div>
+    @endforeach
+</div>
 
         {{-- Кнопки --}}
         <button type="submit" class="btn btn-success mt-3">💾 Сохранить</button>
@@ -148,3 +151,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 @endsection
+

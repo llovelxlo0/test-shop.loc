@@ -1,14 +1,10 @@
-<x-layout>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-</head>
-<body>
+@extends('layouts.app')
 
-    <h1>Настройки профиля</h1>
+@section('title', 'Настройки профиля')
+
+@section('content')
+<div class="container mt-4">
+    <h2 class="mb-4">Настройки профиля</h2>
 
     {{-- Уведомления --}}
     @if (session('success'))
@@ -16,8 +12,8 @@
     @endif
 
     @if ($errors->any())
-        <div class="alert alert-error">
-            <ul>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -26,77 +22,91 @@
     @endif
 
     {{-- === Редактирование профиля === --}}
-    <form method="post" action="{{ route('profile.edit') }}">
+    <form method="post" action="{{ route('profile.edit') }}" class="mb-4">
         @csrf
         @method('PUT')
 
-        <label for="name">Имя</label>
-        <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}">
-        @error('name') <small>{{ $message }}</small> @enderror
+        <div class="mb-3">
+            <label for="name" class="form-label">Имя</label>
+            <input type="text" id="name" name="name"
+                   class="form-control"
+                   value="{{ old('name', $user->name) }}">
+            @error('name') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}">
-        @error('email') <small>{{ $message }}</small> @enderror
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" name="email"
+                   class="form-control"
+                   value="{{ old('email', $user->email) }}">
+            @error('email') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
 
-        <label for="password">Новый пароль (оставь пустым, чтобы не менять)</label>
-        <input type="password" id="password" name="password">
-        @error('password') <small>{{ $message }}</small> @enderror
+        <div class="mb-3">
+            <label for="password" class="form-label">Новый пароль (оставь пустым, чтобы не менять)</label>
+            <input type="password" id="password" name="password" class="form-control">
+            @error('password') <small class="text-danger">{{ $message }}</small> @enderror
+        </div>
 
-        <label for="password_confirmation">Подтверждение нового пароля</label>
-        <input type="password" id="password_confirmation" name="password_confirmation">
+        <div class="mb-3">
+            <label for="password_confirmation" class="form-label">Подтверждение нового пароля</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control">
+        </div>
 
-        <button type="submit">Обновить профиль</button>
+        <button type="submit" class="btn btn-primary">Обновить профиль</button>
     </form>
 
     {{-- === Двухфакторная аутентификация === --}}
     @if($user->twoFactor && $user->twoFactor->enabled)
-    <h3>Двухфакторная аутентификация включена</h3>
+        <h3 class="h5">Двухфакторная аутентификация включена</h3>
 
-    <form method="POST" action="{{ route('2fa.disable') }}">
-        @csrf
-        @method('DELETE')
-        <label for="otp">Введите 2FA-код для отключения</label>
-        <input type="text" name="otp" id="otp" maxlength="6" required>
-        @error('otp')
-            <p style="color: red">{{ $message }}</p>
-        @enderror
-        <button type="submit">Отключить 2FA</button>
-    </form>
-    @else
-    @if (isset($qrCodeUrl) && $qrCodeUrl)
-        <p>📱 Отсканируйте QR:</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ urlencode($qrCodeUrl) }}&size=200x200" alt="QR Code">
-        <p>Или добавьте вручную ключ:</p>
-        <code>{{ $secret }}</code>
-
-        <form method="post" action="{{ route('2fa.verifySetup') }}">
-            @csrf
-            <label for="otp">Введите код из приложения:</label>
-            <input type="text" name="otp" id="otp" maxlength="6" required>
-            <button type="submit">Подтвердить и включить 2FA</button>
-        </form>
-
-        <form method="post" action="{{ route('2fa.disable') }}">
+        <form method="POST" action="{{ route('2fa.disable') }}" class="mt-2 mb-4">
             @csrf
             @method('DELETE')
-            <button type="submit" style="background:#6b7280;">Отмена</button>
+            <label for="otp" class="form-label">Введите 2FA-код для отключения</label>
+            <input type="text" name="otp" id="otp" maxlength="6" required class="form-control w-auto">
+            @error('otp')
+                <p class="text-danger mt-1">{{ $message }}</p>
+            @enderror
+            <button type="submit" class="btn btn-danger mt-2">Отключить 2FA</button>
         </form>
+    @else
+        @if (isset($qrCodeUrl) && $qrCodeUrl)
+            <div class="mb-3">
+                <p>📱 Отсканируйте QR:</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?data={{ urlencode($qrCodeUrl) }}&size=200x200" alt="QR Code">
+                <p class="mt-2">Или добавьте вручную ключ:</p>
+                <code>{{ $secret }}</code>
+            </div>
+
+            <form method="post" action="{{ route('2fa.verifySetup') }}" class="mb-2">
+                @csrf
+                <label for="otp" class="form-label">Введите код из приложения:</label>
+                <input type="text" name="otp" id="otp" maxlength="6" required class="form-control w-auto">
+                <button type="submit" class="btn btn-success mt-2">Подтвердить и включить 2FA</button>
+            </form>
+
+            <form method="post" action="{{ route('2fa.disable') }}">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-secondary">Отмена</button>
+            </form>
         @else
-        <form method="get" action="{{ route('2fa.setup') }}">
-            <button type="submit">Включить 2FA</button>
-        </form>
+            <form method="get" action="{{ route('2fa.setup') }}" class="mb-4">
+                <button type="submit" class="btn btn-outline-primary">Включить 2FA</button>
+            </form>
         @endif
     @endif
-    {{-- === Избранные товары === --}}
-    <hr style="margin: 30px 0;">
 
-    <h2>Мои избранные товары</h2>
+    {{-- === Избранные товары === --}}
+    <hr class="my-4">
+
+    <h2 class="h4 mb-3">Мои избранные товары</h2>
 
     @if($user->wishlist->count())
-        <ul style="list-style: none; padding-left: 0;">
+        <ul class="list-unstyled">
             @foreach($user->wishlist as $good)
-                <li style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-                    {{-- Картинка товара (если есть) --}}
+                <li class="mb-3 d-flex align-items-center gap-3">
                     @if($good->image)
                         <img src="{{ asset('storage/' . $good->image) }}"
                              alt="{{ $good->name }}"
@@ -104,19 +114,16 @@
                     @endif
 
                     <div>
-                        {{-- Название товара — клик ведёт на полную информацию --}}
-                        <a href="{{ route('goods.info', $good->id) }}">
+                        <a href="{{ route('goods.info', $good->id) }}" class="fw-semibold text-decoration-none">
                             {{ $good->name }}
                         </a>
 
-                        {{-- Цена --}}
                         <div>
                             <strong>{{ number_format($good->price, 2) }} ₴</strong>
                         </div>
 
-                        {{-- Категория, если нужна --}}
                         @if($good->category)
-                            <small style="color: #6b7280;">
+                            <small class="text-muted">
                                 Категория:
                                 {{ optional($good->category->parent)->name ? optional($good->category->parent)->name . ' → ' : '' }}
                                 {{ $good->category->name }}
@@ -130,9 +137,8 @@
         <p class="text-muted">У вас пока нет избранных товаров.</p>
     @endif
 
-    <div style="margin-top:20px;">
-        <a href="{{ route('home') }}">⬅ Назад на главную</a>
+    <div class="mt-4">
+        <a href="{{ route('home') }}" class="btn btn-link">⬅ Назад на главную</a>
     </div>
-</body>
-</html>
-</x-layout>
+</div>
+@endsection

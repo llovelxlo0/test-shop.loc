@@ -60,6 +60,6 @@ class User extends Authenticatable
     }
     public function wishlist()
     {
-        return $this->belongsToMany(Goods::class, 'wishlist', 'user_id', 'goods_id')->withTimestamps();
+        return $this->belongsToMany(Goods::class, 'wishlist', 'user_id', 'goods_id');
     }
 }

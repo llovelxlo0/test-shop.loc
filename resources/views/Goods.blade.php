@@ -133,6 +133,60 @@
 <script id="categories-data" type="application/json">
     {!! json_encode($tree) !!}
 </script>
+{{-- JSON с категориями (должен быть ДО основного JS!) --}}
+    @if(isset($tree))
+    <script id="categories-data" type="application/json">
+        {!! json_encode($tree) !!}
+    </script>
+    @endif
+
+    {{-- Основной JS --}}
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const raw = document.getElementById('categories-data')?.textContent;
+        if (!raw) return; // нет категорий — выходим
+
+        const tree = JSON.parse(raw);
+
+        // ловим клики по категориям
+        document.querySelectorAll('.dropdown-item').forEach(el => {
+            el.addEventListener('click', e => {
+                const parent = e.target.closest('.dropdown-submenu')
+                    ?.querySelector('.dropdown-toggle')
+                    ?.textContent?.trim();
+                const subcategory = e.target.textContent.trim();
+
+                e.preventDefault();
+                filterGoods(parent, subcategory);
+            });
+        });
+
+        async function filterGoods(parentName, subcategoryName) {
+            // получаем id родителя и подкатегории
+            const parentId = Object.keys(tree).find(
+                p => p.toLowerCase() === parentName?.toLowerCase()
+            )
+                ? Object.keys(tree).indexOf(parentName) + 1
+                : null;
+
+            let subcategoryId = null;
+            if (subcategoryName && parentName) {
+                const parentChildren = tree[parentName];
+                subcategoryId = Object.entries(parentChildren).find(([id, name]) =>
+                    name.toLowerCase() === subcategoryName.toLowerCase()
+                )?.[0];
+            }
+
+            // создаём ссылку с параметрами
+            const url = new URL('/goods', window.location.origin);
+            if (parentId) url.searchParams.append('parent_id', parentId);
+            if (subcategoryId) url.searchParams.append('subcategory_id', subcategoryId);
+
+            // редирект на страницу фильтрации
+            window.location.href = url.toString();
+        }
+    });
+    </script>
 
 {{-- Основной JS-код --}}
 <script>

@@ -171,7 +171,7 @@ class GoodsController extends Controller
         if ($request->filled('parent_id')) {
             $childCategories = $this->goodsService->getChildCategories($request->parent_id);
         } elseif ($good->category && $good->category->parent_id) {
-            $childCategories = $this->goodsService->getChildCategories($good->parent_id);
+            $childCategories = $this->goodsService->getChildCategories($good->category->parent_id);
         }
         return view('goods.edit', compact('good', 'parents', 'childCategories', 'selectedParentId'));
     }
