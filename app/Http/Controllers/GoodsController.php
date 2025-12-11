@@ -4,145 +4,129 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Goods;
-use App\Services\GoodsService;
 use App\Services\RelatedProductService;
 use App\Services\ViewHistoryService;
 use App\Http\Requests\GoodsRequest;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Services\CategoryService;
+use App\Services\GoodsFilterService;
+use App\Services\GoodsCrudService;
+use App\Services\GoodsAttributesService;
 
 class GoodsController extends Controller
 {
-    protected $goodsService;
     protected $relatedProductService;
     protected $viewHistoryService;
-    public function __construct(GoodsService $goodsService, RelatedProductService $relatedProductService, ViewHistoryService $viewHistoryService)
+    protected $categoryService;
+    protected $goodsFilterService;
+    protected $goodsAttributesService;
+    protected $goodsCrudService;
+    public function __construct(
+    RelatedProductService $relatedProductService, 
+    ViewHistoryService $viewHistoryService, 
+    CategoryService $categoryService,
+    GoodsFilterService $goodsFilterService,
+    GoodsAttributesService $goodsAttributesService,
+    GoodsCrudService $goodsCrudService)
     {
         $this->middleware('auth')->except(['index', 'show', 'FullInfo']);
-        $this->goodsService = $goodsService;
         $this->relatedProductService = $relatedProductService;
+        $this->categoryService = $categoryService;
         $this->viewHistoryService = $viewHistoryService;
-    }
-  public function index(Request $request)
-{
-    $query = Goods::query();
-
-    // 1. Фильтр по категориям
-    if ($request->filled('parent_id')) {
-        $parentId = (int) $request->input('parent_id');
-        $childIds = Category::where('parent_id', $parentId)
-            ->pluck('id')
-            ->toArray();
-
-        $query->whereIn('category_id', array_merge([$parentId], $childIds));
+        $this->goodsFilterService = $goodsFilterService;
+        $this->goodsAttributesService = $goodsAttributesService;
+        $this->goodsCrudService = $goodsCrudService;
     }
 
-    if ($request->filled('subcategory_id')) {
-        $query->where('category_id', (int) $request->input('subcategory_id'));
+        public function index(Request $request)
+    {
+        $data = $this->goodsFilterService->getFilteredData($request);
+
+        // AJAX-запросы — только JSON с товарами
+        if ($request->ajax()) {
+            return response()->json($data['goods']);
+        }
+
+        return view('Goods', [
+            'goods'              => $data['goods'],
+            'tree'               => $data['tree'],
+            'attributesForFilter'=> $data['attributesForFilter'],
+            'selectedAttributes' => $data['selectedAttributes'],
+        ]);
     }
 
-    // 2. Фильтр по EAV-атрибутам
-    // из формы приходит массив вида:
-    // attributes[attribute_id] = [value1, value2, ...]
-    $attributeFilters = $request->input('attributes', []);
+    // Дерево категорий: родитель → подкатегории.
+    protected function buildCategoryTree(): array
+    {
+        $parents = Category::whereNull('parent_id')->get();
 
-    if (!empty($attributeFilters)) {
-        $query->where(function ($q) use ($attributeFilters) {
-            foreach ($attributeFilters as $attrId => $values) {
-                $values = array_filter((array) $values);
+        $tree = [];
+        foreach ($parents as $parent) {
+            $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
+        }
 
-                // пропускаем атрибут, если не выбрали ни одного значения
-                if (empty($values)) {
-                    continue;
-                }
-
-                $q->whereHas('attributes', function ($qa) use ($attrId, $values) {
-                    $qa->where('attributes.id', $attrId)
-                       ->whereIn('attribute_values.value', $values);
-                });
-            }
-        });
+        return $tree;
     }
 
-    // товары после всех фильтров
-    $goods = $query->get();
+    // Построение атрибутов для фильтрации с учетом выбранных категорий
+    protected function buildAttributesForFilter(?int $parentId, ?int $subcategoryId)
+    {
+        
+        $categoryIdsForFilter = Goods::query()
+            ->when($parentId, function ($q) use ($parentId) {
+                $childIds = Category::where('parent_id', $parentId)->pluck('id')->toArray();
+                $q->whereIn('category_id', array_merge([$parentId], $childIds));
+            })
+            ->when($subcategoryId, function ($q) use ($subcategoryId) {
+                $q->where('category_id', $subcategoryId);
+            })
+            ->distinct()
+            ->pluck('category_id');
 
-    // 3. Дерево категорий для селектов
-    $parents = Category::whereNull('parent_id')->get();
-    $tree = [];
-    foreach ($parents as $parent) {
-        $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
-    }
-
-    // 4. Какие категории участвуют в выборке (для построения списка атрибутов)
-    $categoryIdsForFilter = Goods::query()
-        ->when($request->filled('parent_id'), function ($q) use ($request) {
-            $parentId = (int) $request->input('parent_id');
-            $childIds = Category::where('parent_id', $parentId)
-                ->pluck('id')
-                ->toArray();
-
-            $q->whereIn('category_id', array_merge([$parentId], $childIds));
-        })
-        ->when($request->filled('subcategory_id'), function ($q) use ($request) {
-            $q->where('category_id', (int) $request->input('subcategory_id'));
-        })
-        ->distinct()
-        ->pluck('category_id');
-
-    // 5. Атрибуты, которые реально есть у товаров этих категорий
-    $attributes = Attribute::whereHas('goods', function ($q) use ($categoryIdsForFilter) {
+        $attributes = Attribute::whereHas('goods', function ($q) use ($categoryIdsForFilter) {
             if ($categoryIdsForFilter->isNotEmpty()) {
                 $q->whereIn('goods.category_id', $categoryIdsForFilter);
             }
-        })
-        ->get();
+        })->get();
 
-    // 6. Для каждого атрибута получаем список возможных значений
-    $attributesForFilter = $attributes->map(function ($attr) use ($categoryIdsForFilter) {
-        $valuesQuery = DB::table('attribute_values')
-            ->where('attribute_id', $attr->id);
+        $attributesForFilter = $attributes->map(function ($attr) use ($categoryIdsForFilter) {
+            $valuesQuery = DB::table('attribute_values')
+                ->where('attribute_id', $attr->id);
 
-        if ($categoryIdsForFilter->isNotEmpty()) {
-            $valuesQuery
-                ->join('goods', 'goods.id', '=', 'attribute_values.goods_id')
-                ->whereIn('goods.category_id', $categoryIdsForFilter);
-        }
+            if ($categoryIdsForFilter->isNotEmpty()) {
+                $valuesQuery
+                    ->join('goods', 'goods.id', '=', 'attribute_values.goods_id')
+                    ->whereIn('goods.category_id', $categoryIdsForFilter);
+            }
 
-        $attr->filter_values = $valuesQuery
-            ->distinct()
-            ->pluck('value')
-            ->sort()
-            ->values();
+            $attr->filter_values = $valuesQuery
+                ->distinct()
+                ->pluck('value')
+                ->sort()
+                ->values();
 
-        return $attr;
-    });
+            return $attr;
+        });
 
-    // 7. Если это AJAX — отдаем только товары
-    if ($request->ajax()) {
-        return response()->json($goods);
+        return $attributesForFilter;
     }
 
-    // 8. Обычный рендер
-    return view('Goods', [
-        'goods'              => $goods,
-        'tree'               => $tree,
-        'attributesForFilter'=> $attributesForFilter,
-        'selectedAttributes' => $attributeFilters,
-    ]);
-}
-    
+        
     public function create(Request $request) 
     {
-        $parents = $this->goodsService->getParentCategories();
+        $this->authorize('create', Goods::class);
+
+        $parents = $this->categoryService->getParentCategories();
         $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id');
 
         $childCategories = collect();
         $categoryAttributes = collect();
 
         if ($request->filled('parent_id')) {
-        $childCategories = $this->goodsService->getChildCategories($request->parent_id);
+        $childCategories = $this->categoryService->getChildCategories($request->parent_id);
         }
 
         if ($request->filled('category_id')) {
@@ -153,41 +137,49 @@ class GoodsController extends Controller
     }
     public function store(GoodsRequest $request) 
     {
+        $this->authorize('create', Goods::class);
+
         $data = $request->validated();
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('goods', 'public');
         }
-        $this->goodsService->createGoods($data, $imagePath);
+        $good = $this->goodsCrudService->create($data, $imagePath);
+        $this->goodsAttributesService->syncAttributes($good, $data['attributes'] ?? []);
         return redirect()->route('goods.index')->with('success', 'Товар успешно создан.');
     }
     public function edit(Goods $good, Request $request) 
     {
-        $parents = $this->goodsService->getParentCategories();
+        $this->authorize('update', $good);
 
+        $parents = $this->categoryService->getParentCategories();
         $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id', $good->category ? $good->category->parent_id : null);
-
         $childCategories = collect();
         if ($request->filled('parent_id')) {
-            $childCategories = $this->goodsService->getChildCategories($request->parent_id);
+            $childCategories = $this->categoryService->getChildCategories($request->parent_id);
         } elseif ($good->category && $good->category->parent_id) {
-            $childCategories = $this->goodsService->getChildCategories($good->category->parent_id);
+            $childCategories = $this->categoryService->getChildCategories($good->category->parent_id);
         }
         return view('goods.edit', compact('good', 'parents', 'childCategories', 'selectedParentId'));
     }
     public function update(Goods $good, GoodsRequest $request) 
     {
+        $this->authorize('update', $good);
+
         $data = $request->validated();
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('goods', 'public');
         }
-        $this->goodsService->updateGoods($good, $data, $imagePath);
+        $good = $this->goodsCrudService->update($good, $data, $imagePath);
+        $this->goodsAttributesService->syncAttributes($good, $data['attributes'] ?? []);
         return redirect()->route('goods.index')->with('success', 'Товар успешно обновлен.');
     }
     public function destroy(Goods $good) 
     {
-        $this->goodsService->deleteGoods($good);
+        $this->authorize('delete', $good);
+
+        $this->goodsCrudService->delete($good);
         return redirect()->route('goods.index')->with('success', 'Товар успешно удален.');
     }
     public function getSubcategories($parentId)
@@ -198,49 +190,31 @@ class GoodsController extends Controller
 
     public function FullInfo(Goods $goods) 
     {
+        $goods->load([
+            'attributes' => function ($q) {
+                $q->withPivot('value');
+            },
+            'category.parent',
+            'reviews.user',
+        ]);
+
         $this->viewHistoryService->add($goods);
-        $viewHistory = $this->viewHistoryService->get()->where('id', '!=', $goods->id);
-        $goods = Goods::with(['attributes', 'category', 'reviews.user'])->findOrFail($goods->id);
+        $viewHistory = $this->viewHistoryService
+            ->get()
+            ->where('id', '!=', $goods->id);
+
         $relatedGoods = $this->relatedProductService->getRelatedProducts($goods);
+
+        $isInWishlist = false;
+        if (Auth::check()) {
+            $isInWishlist = Auth::user()->wishlist()->where('goods_id', $goods->id)->exists();
+        }
+
         return view('goods.fullinfo', [
-            'goods' => $goods,
+            'goods'        => $goods,
             'relatedGoods' => $relatedGoods ?? collect(),
-            'viewHistory' => $viewHistory
+            'viewHistory'  => $viewHistory,
+            'isInWishlist' => $isInWishlist,
         ]); 
     }
-
-    public function goods(Request $request) 
-    {
-        // Родительские категории
-    $parents = Category::whereNull('parent_id')->get();
-
-    // Формируем дерево родитель → подкатегории
-    $tree = [];
-    foreach ($parents as $parent) {
-        $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
-    }
-
-    // Фильтрация товаров
-    $query = Goods::query();
-
-    if ($request->ajax()) {
-        // Если запрос AJAX — возвращаем JSON
-        if ($request->filled('parent_id')) {
-            $childIds = Category::where('parent_id', $request->parent_id)->pluck('id');
-            $query->whereIn('category_id', $childIds);
-        }
-        if ($request->filled('subcategory_id')) {
-            $query->where('category_id', $request->subcategory_id);
-        }
-
-        $goods = $query->get();
-        return response()->json($goods);
-    }
-
-    // При обычной загрузке страницы — просто все товары
-    $goods = Goods::latest()->get();
-
-    return view('Goods', compact('tree', 'goods')); 
-    }
-    
 }

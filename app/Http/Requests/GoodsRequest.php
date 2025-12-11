@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Goods;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\UsersRequest;
-
+use App\Models\User;
 class GoodsRequest extends FormRequest
 {
     /**
@@ -13,7 +13,28 @@ class GoodsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = Auth::user();
+
+    // Если гость — сразу нет
+    if (!$user) {
+        return false;
+    }
+
+    $goods = $this->route('good'); // имя параметра в роуте: {good}
+
+    // Если создаём
+    if ($this->isMethod('post')) {
+        return $user->can('create', Goods::class);
+    }
+
+    // Если обновляем
+    if ($this->isMethod('put') || $this->isMethod('patch')) {
+        if ($goods instanceof Goods) {
+            return $user->can('update', $goods);
+        }
+    }
+
+    return false;
     }
 
     /**
@@ -24,23 +45,20 @@ class GoodsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'nullable|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'stock' => 'required|integer|min:0',
+            // Базовые поля товара
+            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'name'        => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'price'       => ['nullable', 'numeric', 'min:0'],
+            'stock'       => ['required', 'integer', 'min:0'],
 
-            //EAV
-            'attributes' => 'array|nullable',
-            'attributes.*.name' => 'nullable|string|max:255',
-            'attributes.*.value' => 'nullable|string|max:255',
+            // Для create можно сделать image обязательной, для update — опциональной.
+            'image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
 
-            // Reviews
-            'reviews' => 'array|nullable',
-            'reviews.*.rating' => 'required|integer|min:1|max:5',
-            'reviews.*.comment' => 'nullable|string',
-            'reviews.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            // EAV: attributes[ключ]['name'], attributes[ключ]['value']
+            'attributes'         => ['nullable', 'array'],
+            'attributes.*.name'  => ['nullable', 'string', 'max:255'],
+            'attributes.*.value' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -42,13 +42,8 @@
                     @endforeach
                 </ul>
             @endif
-            <button 
-                type="button"
-                class="btn btn-outline-warning wishlist-btn"
-                data-url="{{ route('wishlist.toggle', $goods->id) }}"
-            >
-                ⭐ В избранное
-            </button>
+            {{-- Кнопка добавления в избранное --}}
+            <x-wishlist-button :goods="$goods" :is-in-wishlist="$isInWishlist" />
             {{-- Кнопка добавления в корзину --}}
             @if($goods->stock > 0)
                 <form action="{{ route('cart.add') }}" method="POST" class="d-inline">
@@ -62,166 +57,97 @@
                 <p class="text-danger">Нет в наличии</p>
             @endif
             @if(isset($relatedGoods) && $relatedGoods->isNotEmpty())
-        <hr>
-        <h4 class="mt-4">Похожие товары</h4>
-        <div class="row">
-            @foreach($relatedGoods as $item)
-                <div class="col-md-2 mb-3">
-                    <a href="{{ route('goods.info', $item->id) }}" class="text-decoration-none text-dark">
-                        <div class="card shadow-sm h-100">
-                            @if($item->image)
-                                <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
-                            @endif
-                            <div class="card-body text-center p-2">
-                                <h6 class="card-title text-truncate" title="{{ $item->name }}">{{ $item->name }}</h6>
-                                <p class="text-success fw-bold mb-0">{{ number_format($item->price, 2) }} ₴</p>
-                            </div>
+            <hr>
+                <h4 class="mt-4">Похожие товары</h4>
+                <div class="row">
+                    @foreach($relatedGoods as $item)
+                        <div class="col-md-2 mb-3">
+                            <x-product-card
+                                :goods="$item"
+                                :compact="true"
+                                :show-add-to-cart="false"
+                            />
                         </div>
-                    </a>
+                    @endforeach
                 </div>
-            @endforeach
+            @endif
+    {{-- История просмотров --}}
+    <x-view-history
+    :items="$viewHistory"
+    title="История просмотров"/>
+
+    {{-- Кнопки админа --}}
+    @can('update', $goods)
+    <a href="{{ route('goods.edit', $goods->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
+    @endcan
+
+    @can('delete', $goods)
+        <form action="{{ route('goods.destroy', $goods->id) }}" method="POST" class="d-inline"
+              onsubmit="return confirm('Вы уверены, что хотите удалить этот товар?');">
+            @csrf
+            @method('DELETE')
+            <button class="btn btn-danger btn-sm">Удалить</button>
+        </form>
+    @endcan
+
+
+    @auth
+    <hr class="mt-4">
+    <h5>Оставить отзыв</h5>
+    @if(session('succsess'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
-    @if(isset($viewHistory) && $viewHistory->isNotEmpty())
-    <hr>
-    <h4 class="mt-4">Вы недавно смотрели</h4>
-    <div class="row">
-        @foreach($viewHistory as $item)
-            <div class="col-md-2 mb-3">
-                <a href="{{ route('goods.info', $item->id) }}" class="text-decoration-none text-dark">
-                    <div class="card shadow-sm h-100">
-                        @if($item->image)
-                            <img src="{{ asset('storage/' . $item->image) }}" class="card-img-top" alt="{{ $item->name }}">
-                        @endif
-                        <div class="card-body text-center p-2">
-                            <h6 class="card-title text-truncate" title="{{ $item->name }}">{{ $item->name }}</h6>
-                            <p class="text-success fw-bold mb-0">
-                                {{ number_format($item->price, 2) }} ₴
-                            </p>
-                        </div>
-                    </div>
-                </a>
-            </div>
+    <form action="{{ route('goods.reviews.store', $goods->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="mb-3">
+            <label for="rating" class="form-label">Рейтинг (1-5):</label>
+            <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+        </div>
+        <div class="mb-3">
+            <label for="comment" class="form-label">Комментарий:</label>
+            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Изображение (необязательно):</label>
+            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+    </form>
+    @endauth
+    {{-- Список отзывов --}}
+    @if($goods->reviews->count())
+        <hr class="mt-4">
+        <h5>Отзывы о товаре</h5>
+
+        @foreach($goods->reviews->sortByDesc('created_at') as $review)
+            <x-review-item :review="$review" />
         @endforeach
-    </div>
+    @else
+        <hr class="mt-4">
+        <p class="text-muted">Пока нет ни одного отзыва. Будьте первым!</p>
     @endif
 
-
-            {{-- Кнопки админа --}}
-            @if(Auth::check() && Auth::user()->isAdmin())
-                <div class="mt-4">
-                    <a href="{{ route('goods.edit', $goods->id) }}" class="btn btn-warning me-2">✏️ Редактировать</a>
-                    <form action="{{ route('goods.destroy', $goods->id) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить товар?')">
-                            🗑 Удалить
-                        </button>
-                    </form>
-                </div>
-            @endif
-
-            @auth
-            <hr class="mt-4">
-            <h5>Оставить отзыв</h5>
-            @if(session('succsess'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-            <form action="{{ route('goods.reviews.store', $goods->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="mb-3">
-                    <label for="rating" class="form-label">Рейтинг (1-5):</label>
-                    <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
-                </div>
-                <div class="mb-3">
-                    <label for="comment" class="form-label">Комментарий:</label>
-                    <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="image" class="form-label">Изображение (необязательно):</label>
-                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                </div>
-                <button type="submit" class="btn btn-primary">Отправить отзыв</button>
-            </form>
-            @endauth
-            {{-- Список отзывов --}}
-            @if($goods->reviews->count())
-                <hr class="mt-4">
-                <h5>Отзывы о товаре</h5>
-                @foreach($goods->reviews->sortByDesc('created_at') as $review)
-            <div class="border rounded p-3 mb-3">
-            <div class="d-flex justify-content-between">
-                <strong>{{ $review->user->name ?? 'Пользователь' }}</strong>
-                <small class="text-muted">
-                    {{ $review->created_at->format('d.m.Y H:i') }}
-                </small>
-            </div>
-            @auth
-                @if(Auth::id() === $review->user_id)
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('reviews.edit', $review->id) }}" class="btn btn-sm btn-outline-primary">
-                            Редактировать
-                        </a>
-
-                        <form action="{{ route('reviews.destroy', $review->id) }}" method="POST"
-                              onsubmit="return confirm('Удалить отзыв?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                Удалить
-                            </button>
-                        </form>
-                    </div>
-                @endif
-            @endauth
-            <div>
-                Рейтинг:
-                @for ($i = 1; $i <= 5; $i++)
-                    @if ($i <= $review->rating)
-                        <span class="text-warning">★</span>
-                    @else
-                        <span class="text-secondary">☆</span>
-                    @endif
-                @endfor
-            </div>
-
-            <p class="mt-2 mb-2">{{ $review->comment }}</p>
-
-            @if($review->image)
-                <div class="mt-2">
-                    <img src="{{ asset('storage/' . $review->image) }}" 
-                         alt="Фото отзыва"
-                         class="img-fluid rounded" style="max-width: 200px;">
-                </div>
-            @endif
-        </div>
-        @endforeach
-        @else
-            <hr class="mt-4">
-            <p class="text-muted">Пока нет ни одного отзыва. Будьте первым!</p>
-        @endif
-            <div class="mt-4">
-                <a href="{{ route('goods.index') }}" class="btn btn-secondary">← Назад к каталогу</a>
-            </div>
-        </div>
+    <div class="mt-4">
+        <a href="{{ route('goods.index') }}" class="btn btn-secondary">← Назад к каталогу</a>
     </div>
 </div>
+</div>
+</div>
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.wishlist-btn');
 
     if (!buttons.length) {
-        // для дебага
-        console.log('wishlist: нет кнопок на странице');
         return;
     }
 
@@ -238,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Если не авторизован — Laravel вернёт 302 на /login
                 if (response.redirected) {
                     window.location.href = response.url;
                     return;
@@ -251,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const data = await response.json();
-                console.log('Wishlist response:', data);
 
                 if (data.status === 'added') {
                     btn.textContent = '❤️ В избранном';
@@ -270,4 +194,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+@endpush
 @endsection

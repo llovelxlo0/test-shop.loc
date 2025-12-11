@@ -5,7 +5,7 @@ class CategoryService
 {
     public function getParentCategories()
 {
-    return Category::whereNull('parent_id')->whereHas('children')->pluck('name', 'id');
+    return Category::whereNull('parent_id')->pluck('name', 'id');
 }
 
     public function getChildCategories($parentId)
@@ -19,10 +19,11 @@ class CategoryService
 
     public function createCategory(array $data)
     {
-        return Category::create([
-            'name' => $data['name'],
-            'parent_id' =>$data['parent_id'] ?? null
-        ]);
+        if (empty($data['parent_id'])) {
+        $data['parent_id'] = null;
+        }
+
+    return Category::create($data);
     }
     public function updateCategory(Category $category, array $data)
     {

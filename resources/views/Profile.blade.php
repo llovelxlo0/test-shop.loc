@@ -104,35 +104,11 @@
     <h2 class="h4 mb-3">Мои избранные товары</h2>
 
     @if($user->wishlist->count())
-        <ul class="list-unstyled">
-            @foreach($user->wishlist as $good)
-                <li class="mb-3 d-flex align-items-center gap-3">
-                    @if($good->image)
-                        <img src="{{ asset('storage/' . $good->image) }}"
-                             alt="{{ $good->name }}"
-                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
-                    @endif
-
-                    <div>
-                        <a href="{{ route('goods.info', $good->id) }}" class="fw-semibold text-decoration-none">
-                            {{ $good->name }}
-                        </a>
-
-                        <div>
-                            <strong>{{ number_format($good->price, 2) }} ₴</strong>
-                        </div>
-
-                        @if($good->category)
-                            <small class="text-muted">
-                                Категория:
-                                {{ optional($good->category->parent)->name ? optional($good->category->parent)->name . ' → ' : '' }}
-                                {{ $good->category->name }}
-                            </small>
-                        @endif
-                    </div>
-                </li>
-            @endforeach
-        </ul>
+    <div class="row mt-3">
+        @foreach($user->wishlist as $good)
+            <x-product-card :goods="$good" :showCategory="true" />
+        @endforeach
+    </div>
     @else
         <p class="text-muted">У вас пока нет избранных товаров.</p>
     @endif

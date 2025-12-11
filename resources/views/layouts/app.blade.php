@@ -47,10 +47,10 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('categories.index') }}">Категории</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('goods.create') }}">Добавить Товар</a>
-                            </li>
-                        @endif
+                            @endif
+                            @can('create', \App\Models\Goods::class)
+                                <a class="nav-link" href="{{ route('goods.create') }}">Добавить товар</a>
+                            @endcan
 
                         <li class="nav-item d-flex align-items-center">
                             <a href="{{ route('profile') }}" class="btn btn-primary btn-sm me-2">Профиль</a>

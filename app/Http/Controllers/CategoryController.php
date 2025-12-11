@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Http\Requests\CategoryRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Services\CategoryService;
@@ -29,12 +29,9 @@ class CategoryController extends Controller
 
     return view('categories.create', compact('parents', 'selectedParentId', 'childCategories'));
     }
-    public function store(Request $request)
+    public function store(CategoryRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'parent_id' => 'nullable|exists:categories,id'
-        ]);
+        $data = $request->validated();
         $this->categoryService->createCategory($data);
         return redirect()->route('categories.index')->with('success', 'Категория успешно создана.');
     }

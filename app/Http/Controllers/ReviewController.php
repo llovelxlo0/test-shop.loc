@@ -7,16 +7,13 @@ use App\Models\Review;
 use App\Models\Goods;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\ReviewRequest;
 
 class ReviewController extends Controller
 {
-    public function store(Goods $goods, Request $request)
+    public function store(Goods $goods, ReviewRequest $request)
     {
-        $data = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:65535',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
-        ]);
+        $data = $request->validated();
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('reviews', 'public');
@@ -34,13 +31,9 @@ class ReviewController extends Controller
     {
         return view('reviews.edit', compact('review'));
     }
-    public function update(Review $review, Request $request)
+    public function update(Review $review, ReviewRequest $request)
     {
-        $data = $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:65535',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
-        ]);
+        $data = $request->validated();
         if ($request->hasFile('image')) {
             if ($review->image) {
                 Storage::disk('public')->delete($review->image);

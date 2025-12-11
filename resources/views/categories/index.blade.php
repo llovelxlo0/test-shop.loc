@@ -3,9 +3,9 @@
 @section('content')
 <div class="container">
     <h1>Категории</h1>
-    @if(Auth::check() && Auth::user()->isAdmin())
-        <a href="{{ route('categories.create') }}" class="btn btn-primary">Добавить категорию</a>
-    @endif
+    @can('create', \App\Models\Goods::class)
+        <a class="nav-link" href="{{ route('categories.create') }}">Добавить категорию</a>
+    @endcan
 
     <table class="table mt-3">
         <thead>

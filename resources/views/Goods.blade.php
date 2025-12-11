@@ -112,21 +112,13 @@
 
     {{-- Контейнер товаров --}}
     <div id="goodsList" class="row mt-4">
-    @foreach($goods as $good)
-        <div class="col-md-3 mb-3">
-            <a href="{{ route('goods.info', $good->id) }}"
-               class="text-decoration-none text-dark">
-                <div class="card shadow-sm h-100">
-                    <img src="/storage/{{ $good->image }}" class="card-img-top" alt="{{ $good->name }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $good->name }}</h5>
-                        <p class="card-text">{{ $good->price }}₴</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-    @endforeach
-</div>
+        @foreach($goods as $good)
+            <div class="col-md-3 mb-3">
+                <x-product-card :goods="$good" />
+            </div>
+        @endforeach
+    </div>
+
 
 
 {{-- 📦 Встраиваем JSON с категориями в безопасный блок --}}

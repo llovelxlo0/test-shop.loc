@@ -19,6 +19,14 @@
     <form action="{{ route('reviews.update', $review->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
+        <div class="mb-3">
+            <label for="rating" class="form-label">Рейтинг</label>
+            <select name="rating" id="rating" class="form-select" required>
+                @for($i = 1; $i <= 5; $i++)
+                    <option value="{{ $i }}" {{ old('rating', $review->rating) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                @endfor
+            </select>
+        </div>
 
         <div class="mb-3">
             <label for="comment" class="form-label">Текст отзыва</label>
