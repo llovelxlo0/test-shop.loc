@@ -18,6 +18,7 @@ return new class extends Migration
             $table->tinyInteger('rating')->unsigned();
             $table->text('comment')->nullable(); 
             $table->string('image')->nullable();
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }

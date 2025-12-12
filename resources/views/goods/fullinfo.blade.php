@@ -124,17 +124,12 @@
     </form>
     @endauth
     {{-- Список отзывов --}}
-    @if($goods->reviews->count())
-        <hr class="mt-4">
-        <h5>Отзывы о товаре</h5>
-
-        @foreach($goods->reviews->sortByDesc('created_at') as $review)
-            <x-review-item :review="$review" />
-        @endforeach
-    @else
-        <hr class="mt-4">
-        <p class="text-muted">Пока нет ни одного отзыва. Будьте первым!</p>
-    @endif
+        <h3 class="mt-4">Отзывы</h3>
+            @forelse($goods->reviews as $review)
+                <x-review-item :review="$review" />
+            @empty
+                <p>Пока нет отзывов. Будьте первым!</p>
+            @endforelse
 
     <div class="mt-4">
         <a href="{{ route('goods.index') }}" class="btn btn-secondary">← Назад к каталогу</a>

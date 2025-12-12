@@ -15,6 +15,7 @@ class CategoryController extends Controller
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
+        $this->middleware('auth')->except(['index', 'show', 'getSubcategories']);
     }
     public function index()
     {
@@ -23,6 +24,7 @@ class CategoryController extends Controller
     }
     public function create(Request $request)
     {
+        $this->authorize('create', Category::class);
         $parents = $this->categoryService->getParentCategories();
         $selectedParentId = $request->query('parent_id');
         $childCategories = $selectedParentId ? $this->categoryService->getChildCategories($selectedParentId) : collect();
@@ -31,12 +33,14 @@ class CategoryController extends Controller
     }
     public function store(CategoryRequest $request)
     {
+        $this->authorize('create', Category::class);
         $data = $request->validated();
         $this->categoryService->createCategory($data);
         return redirect()->route('categories.index')->with('success', 'Категория успешно создана.');
     }
     public function edit(Category $category, Request $request)
     {
+        $this->authorize('update', $category);
     $parents = $this->categoryService->getParentCategories();
 
         $selectedParentId = $request->filled('parent_id') ? $request->parent_id : old('parent_id', $category ? $category->parent_id : null);
@@ -51,15 +55,14 @@ class CategoryController extends Controller
     }
     public function update(Request $request, Category $category)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'parent_id' => 'nullable|exists:categories,id'
-        ]);
+        $this->authorize('update', $category);
+        $data = $request->validated();
         $this->categoryService->updateCategory($category, $data);
         return redirect()->route('categories.index')->with('success', 'Категория успешно обновлена.');
     }
     public function destroy(Category $category)
     {
+        $this->authorize('delete', $category);
         $this->categoryService->deleteCategory($category);
         return redirect()->route('categories.index')->with('success', 'Категория успешно удалена.');
     }

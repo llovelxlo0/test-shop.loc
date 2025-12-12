@@ -32,7 +32,6 @@ class GoodsController extends Controller
     GoodsAttributesService $goodsAttributesService,
     GoodsCrudService $goodsCrudService)
     {
-        $this->middleware('auth')->except(['index', 'show', 'FullInfo']);
         $this->relatedProductService = $relatedProductService;
         $this->categoryService = $categoryService;
         $this->viewHistoryService = $viewHistoryService;
@@ -43,6 +42,7 @@ class GoodsController extends Controller
 
         public function index(Request $request)
     {
+        $this->authorize('viewAny', Goods::class);
         $data = $this->goodsFilterService->getFilteredData($request);
 
         // AJAX-запросы — только JSON с товарами

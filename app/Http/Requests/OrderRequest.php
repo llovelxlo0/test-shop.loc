@@ -3,9 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Category;
+use App\Models\Order;
 
-class CategoryRequest extends FormRequest
+class OrderRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,16 +16,16 @@ class CategoryRequest extends FormRequest
         if (!$user) {
             return false;
         }
-        $category = $this->route('category'); // имя параметра в роуте: {category}
+        $order = $this->route('order'); // имя параметра в роуте: {order}
 
         if($this->isMethod('post')) {
-            return $user->can('create', Category::class);
+            return $user->can('create', Order::class);
         }
         if($this->isMethod('put') || $this->isMethod('patch')) {
-            return $category && $user->can('update', $category);
+            return $order && $user->can('update', $order);
         }
         if($this->isMethod('delete')) {
-            return $category && $user->can('delete', $category);
+            return $order && $user->can('delete', $order);
         }
         return false;
     }
@@ -38,8 +38,7 @@ class CategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'parent_id' => 'nullable|integer|exists:categories,id',
-            'name' => 'required|string|max:255',
+            //
         ];
     }
 }

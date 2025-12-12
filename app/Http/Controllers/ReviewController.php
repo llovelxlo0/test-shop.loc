@@ -13,6 +13,7 @@ class ReviewController extends Controller
 {
     public function store(Goods $goods, ReviewRequest $request)
     {
+        $this->authorize('create', Review::class);
         $data = $request->validated();
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -29,10 +30,12 @@ class ReviewController extends Controller
     }
     public function edit(Review $review)
     {
+        $this->authorize('update', $review);
         return view('reviews.edit', compact('review'));
     }
     public function update(Review $review, ReviewRequest $request)
     {
+        $this->authorize('update', $review);
         $data = $request->validated();
         if ($request->hasFile('image')) {
             if ($review->image) {
@@ -47,8 +50,9 @@ class ReviewController extends Controller
         ]);
         return redirect()->route('goods.info', $review->goods_id)->with('success', 'Отзыв успешно обновлен.');
     }
-    public function destroy(Review $review)
+    public function destroy(ReviewRequest $request, Review $review)
     {
+        $this->authorize('delete', $review);
         $goodsId = $review->goods_id;
         $review->delete();
         return redirect()->route('goods.info', $goodsId)->with('success', 'Отзыв успешно удален.');

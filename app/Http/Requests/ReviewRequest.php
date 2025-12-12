@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Review;
 
 class ReviewRequest extends FormRequest
 {
@@ -11,7 +12,28 @@ class ReviewRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+    if (!$user) {
+        return false;
+    }
+
+    /** @var \App\Models\Review|null $review */
+    $review = $this->route('review'); // {review} в роуте
+
+    if ($this->isMethod('post')) {
+        return $user->can('create', Review::class);
+    }
+
+    if ($this->isMethod('put') || $this->isMethod('patch')) {
+        return $review && $user->can('update', $review);
+    }
+
+    if ($this->isMethod('delete')) {
+        return $review && $user->can('delete', $review);
+    }
+
+    return false;
     }
 
     /**
