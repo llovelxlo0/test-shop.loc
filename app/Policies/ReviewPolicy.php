@@ -67,15 +67,17 @@ class ReviewPolicy
     */
     public function vote(User $user, Review $review): bool
     {
+        // Нельзя голосовать за свой отзыв
         if ($user->id === $review->user_id) {
-        return false; // не голосуем за себя
-    }
+            return false;
+        }
 
-    if (!$review->isApproved()) {
-        return false; // голосуем только за одобренные
-    }
+        // Голосуем только за одобренные
+        if (! $review->isApproved()) {
+            return false;
+        }
 
-    return true;
+        return true;
     }
 
     /**

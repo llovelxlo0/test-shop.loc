@@ -43,12 +43,13 @@ class Review extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function vote()
+    public function votes(): HasMany
     {
-        return $this->HasMany(ReviewVote::class);
+        return $this->hasMany(ReviewVote::class);
     }
+
     public function getRatingScoreAttribute(): int
     {
-        return (int) $this->vote()->sum('value');
+        return (int) $this->votes()->sum('value');
     }
 }

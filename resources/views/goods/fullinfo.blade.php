@@ -123,14 +123,27 @@
         <button type="submit" class="btn btn-primary">Отправить отзыв</button>
     </form>
     @endauth
-    {{-- Список отзывов --}}
-        <h3 class="mt-4">Отзывы</h3>
-            @forelse($goods->reviews as $review)
-                <x-review-item :review="$review" />
-            @empty
-                <p>Пока нет отзывов. Будьте первым!</p>
-            @endforelse
+    <h3 class="mt-4">Отзывы</h3>
 
+    {{-- Панель сортировки --}}
+    <div class="mb-3">
+            <span>Сортировать:</span>
+                <a href="{{ request()->fullUrlWithQuery(['sort' => 'date']) }}"
+                class="{{ $sort === 'date' ? 'fw-bold' : '' }}">
+                    по дате
+                </a>
+                |
+                <a href="{{ request()->fullUrlWithQuery(['sort' => 'rating']) }}"
+                class="{{ $sort === 'rating' ? 'fw-bold' : '' }}">
+                    по полезности
+                </a>
+        </div>
+
+        @forelse($reviews as $review)
+            <x-review-item :review="$review" />
+        @empty
+            <p>Пока нет одобренных отзывов. Вы можете быть первым!</p>
+        @endforelse
     <div class="mt-4">
         <a href="{{ route('goods.index') }}" class="btn btn-secondary">← Назад к каталогу</a>
     </div>

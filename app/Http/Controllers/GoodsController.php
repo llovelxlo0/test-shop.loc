@@ -190,6 +190,7 @@ class GoodsController extends Controller
 
     public function FullInfo(Goods $goods) 
     {
+        $sort = request('sort', 'date');
         $goods->load([
             'attributes' => function ($q) {
                 $q->withPivot('value');
@@ -197,6 +198,18 @@ class GoodsController extends Controller
             'category.parent',
             'reviews.user',
         ]);
+
+        $reviewsQuery = $goods->reviews()->visible()->with('user');
+
+        if ($sort === 'rating') {
+            $reviewsQuery
+        ->withSum('votes as votes_sum', 'value') // посчитает SUM(value) по связи vote
+        ->orderByDesc('votes_sum')  // алиас формируется как: имя_связи + '_sum'
+        ->orderByDesc('created_at');
+        } else {
+            $reviewsQuery->orderByDesc('created_at');
+        }
+        $reviews = $reviewsQuery->get();
 
         $this->viewHistoryService->add($goods);
         $viewHistory = $this->viewHistoryService
@@ -215,6 +228,8 @@ class GoodsController extends Controller
             'relatedGoods' => $relatedGoods ?? collect(),
             'viewHistory'  => $viewHistory,
             'isInWishlist' => $isInWishlist,
+            'reviews' => $reviews,
+            'sort' => $sort,
         ]); 
     }
 }
