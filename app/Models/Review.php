@@ -47,9 +47,12 @@ class Review extends Model
     {
         return $this->hasMany(ReviewVote::class);
     }
-
     public function getRatingScoreAttribute(): int
     {
         return (int) $this->votes()->sum('value');
+    }
+    public function replies()
+    {
+        return $this->hasMany(ReviewReply::class, 'review_id');
     }
 }

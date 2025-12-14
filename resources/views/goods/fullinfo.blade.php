@@ -106,22 +106,22 @@
             </ul>
         </div>
     @endif
-    <form action="{{ route('goods.reviews.store', $goods->id) }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <div class="mb-3">
-            <label for="rating" class="form-label">Рейтинг (1-5):</label>
-            <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
-        </div>
-        <div class="mb-3">
-            <label for="comment" class="form-label">Комментарий:</label>
-            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="image" class="form-label">Изображение (необязательно):</label>
-            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-        </div>
-        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
-    </form>
+        <form action="{{ route('goods.reviews.store', $goods->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-3">
+                <label for="rating" class="form-label">Рейтинг (1-5):</label>
+                <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Комментарий:</label>
+                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="image" class="form-label">Изображение (необязательно):</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+        </form>
     @endauth
     <h3 class="mt-4">Отзывы</h3>
 
