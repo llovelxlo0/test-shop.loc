@@ -6,6 +6,8 @@ use App\Models\Goods;
 use App\Services\CartService;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Policies\OrderPolicy;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 class OrderService
@@ -16,57 +18,74 @@ class OrderService
         $this->cartService = $cartService;
     }
 
-    public function checkout()
-    {
-        if (!Auth::check()) {
-            throw new \Exception('Пользователь не авторизован');
-        }
+    public function checkout(array $checkoutData = []): Order
+{
+    $user = Auth::user(); // может быть null
+    $items = $this->cartService->getCartContents();
 
-        $userId = Auth::id();
-        $items = $this->cartService->getCartContents();
-        if ($items->isEmpty()) {
-            throw new \Exception('Корзина пуста');
-        }
-        return DB::transaction(function() use ($userId, $items){
-            $order = Order::create([
-                'user_id' => $userId,
-                'status' => 'new',
-                'total' => 0
-            ]);
-            $total = 0;
-            foreach ($items as $item) {
-                $product = $item['goods'];
-                $lockedProduct = Goods::where('id', $product->id)
-                                ->lockForUpdate()
-                                ->first();
-                if (!$lockedProduct) {
-                    throw new \Exception("Товара c ID {$product->id} не существует");
-                }
-
-                if ($lockedProduct -> stock < $item['quantity']){
-                    throw new \Exception("Товара {$product->name} недостаточно на складе");
-                }
-
-                $lockedProduct->decrement('stock', $item['quantity']);
-            
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'goods_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $lockedProduct->price
-                ]);
-                $total += $lockedProduct->price * $item['quantity'];
-            }
-
-            // Обновляем общую сумму заказа
-            $order->update(['total' => $total]);
-
-            // Очищаем корзину
-            if (Auth::check()){
-                    CartItem::where('user_id', Auth::id())->delete();
-            } else {
-            session()->forget('cart');
-            }
-        });
+    if ($items->isEmpty()) {
+        throw new \Exception('Корзина пуста');
     }
+
+    return DB::transaction(function () use ($user, $items, $checkoutData) {
+
+        $order = Order::create([
+            'user_id' => $user?->id,
+            'status'  => Order::STATUS_PENDING,
+            'total'   => '0.00',
+            'recipient_name' => $checkoutData['recipient_name'] ?? null,
+            'phone' => $checkoutData['phone'] ?? null,
+            'address' => $checkoutData['address'] ?? null,
+            'comment' => $checkoutData['comment'] ?? null,
+            'currency' =>$checkoutData['currency'] ?? 'UAH',
+        ]);
+
+        $total = '0.00';
+
+        foreach ($items as $item) {
+            /** @var Goods $product */
+            $product = $item['goods'];
+            $qty = (int) $item['quantity'];
+            if ($qty < 1) {
+                throw new \Exception('Некорректное количество товара в корзине');
+            }
+
+            // блокируем товар (если есть stock)
+            $locked = Goods::where('id', $product->id)->lockForUpdate()->first();
+            if (!$locked) {
+                throw new \Exception("Товара c ID {$product->id} не существует");
+            }
+
+            if ($locked->stock < $qty) {
+                throw new \Exception("Товара {$locked->name} недостаточно на складе");
+            }
+
+            $locked->decrement('stock', $qty);
+
+            // цена как строка (decimal)
+            $price = (string) $locked->price;
+            $line  = bcmul($price, (string)$qty, 2);
+            $total = bcadd($total, $line, 2);
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'goods_id' => $locked->id,
+                'quantity' => $qty,
+                'price'    => $locked->price,
+                'subtotal' => $line,
+            ]);
+        }
+
+        $order->update(['total' => $total]);
+
+        // очищаем корзину
+        if ($user) {
+            CartItem::where('user_id', $user->id)->delete();
+        } else {
+            session()->forget('cart');
+        }
+
+        return $order;
+    });
+}
 }

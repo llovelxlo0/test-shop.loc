@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('price', 10, 2);
+            $table->decimal('subtotal', 10, 2)->default(0);
             $table->timestamps();
         });
     }

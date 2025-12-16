@@ -66,16 +66,6 @@
                 <span class="text-danger">Нет в наличии</span>
             @endif
         </td>
-        @if(Auth::check() && Auth::user()->isAdmin())
-            <td class="text-center align-middle">
-                <a href="{{ route('goods.edit', $good->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
-                <form action="{{ route('goods.destroy', $good->id) }}" method="POST" style="display:inline-block;">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-danger btn-sm" onclick="return confirm('Удалить товар?')">Удалить</button>
-                </form>
-            </td>
-        @endif
     </tr>
 @endforeach
         </tbody>

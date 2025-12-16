@@ -78,11 +78,11 @@
 
     {{-- Кнопки админа --}}
     @can('update', $goods)
-    <a href="{{ route('goods.edit', $goods->id) }}" class="btn btn-warning btn-sm">Редактировать</a>
+    <a href="{{ route('goods.edit', $goods) }}" class="btn btn-warning btn-sm">Редактировать</a>
     @endcan
 
     @can('delete', $goods)
-        <form action="{{ route('goods.destroy', $goods->id) }}" method="POST" class="d-inline"
+        <form action="{{ route('goods.destroy', $goods) }}" method="POST" class="d-inline"
               onsubmit="return confirm('Вы уверены, что хотите удалить этот товар?');">
             @csrf
             @method('DELETE')

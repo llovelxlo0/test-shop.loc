@@ -164,23 +164,27 @@ class CartService
     }
 
     protected function getCartFromSession()
-    {
-        // Получаем товары из сессии для неавторизованного пользователя
-        $sessionCart = session()->get('cart', []);
-        $items = [];
-        // Перебираем элементы и получаем связанные товары
-        foreach ($sessionCart as $goodsId => $newQty) {
-            $product = CartItem::find($goodsId);
-            if ($product) {
-                $items[] = [
-                    'goods' => $product,
-                    'quantity' => min ($newQty, $product->stock),
-                    'price' => $product->price,
-                ];
-            }
+{
+    $sessionCart = session()->get('cart', []);
+    $items = [];
+
+    foreach ($sessionCart as $goodsId => $row) {
+        $qty = is_array($row) ? ($row['quantity'] ?? 0) : (int)$row;
+
+        $product = Goods::find($goodsId);
+        if (!$product) {
+            continue;
         }
-        return $items;
+
+        $items[] = [
+            'goods'     => $product,
+            'quantity'  => min($qty, $product->stock),
+            'price'     => $product->price,
+        ];
     }
+
+    return collect($items);
+}
 
     protected function getCartFromDatabase(int $userId)
     {

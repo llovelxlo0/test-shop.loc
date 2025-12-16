@@ -9,7 +9,7 @@ Route::get('goods/{goods}/info', [GoodsController::class, 'FullInfo'])->name('go
 Route::middleware('auth')->group(function () {
     Route::get('/goods/create', [GoodsController::class, 'create'])->name('goods.create');
     Route::post('/goods', [GoodsController::class, 'store'])->name('goods.store');
-    Route::get('/goods/{goods}/edit', [GoodsController::class, 'edit'])->name('goods.edit');
-    Route::put('/goods/{goods}', [GoodsController::class, 'update'])->name('goods.update');
-    Route::delete('/goods/{goods}', [GoodsController::class, 'destroy'])->name('goods.destroy');
+    Route::get('/goods/{good}/edit', [GoodsController::class, 'edit'])->name('goods.edit');
+    Route::put('/goods/{good}', [GoodsController::class, 'update'])->name('goods.update');
+    Route::delete('/goods/{good}', [GoodsController::class, 'destroy'])->name('goods.destroy');
 });

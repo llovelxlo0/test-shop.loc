@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Goods;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 class GoodsRequest extends FormRequest
 {
     /**
@@ -20,18 +21,19 @@ class GoodsRequest extends FormRequest
         return false;
     }
 
-    $goods = $this->route('good'); // имя параметра в роуте: {good}
+    $good = $this->route('good'); // имя параметра в роуте: {good}
 
     // Если создаём
     if ($this->isMethod('post')) {
         return $user->can('create', Goods::class);
     }
 
-    // Если обновляем
-    if ($this->isMethod('put') || $this->isMethod('patch')) {
-        if ($goods instanceof Goods) {
-            return $user->can('update', $goods);
-        }
+    if (in_array($this->method(), ['PUT','PATCH'], true)) {
+        return $good && $user->can('update', $good);
+    }
+
+    if ($this->isMethod('delete')) {
+        return $good && $user->can('delete', $good);
     }
 
     return false;

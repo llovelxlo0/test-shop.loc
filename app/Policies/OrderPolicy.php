@@ -13,7 +13,7 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     /**
@@ -29,13 +29,24 @@ class OrderPolicy
      */
     public function create(User $user): bool
     {
-        return $user->id !== null;
+        return true;
+    }
+
+    //Если у пользователя отмена заказа
+    public function cancel(User $user, Order $order): bool
+    {
+        if ($user -> isAdmin()){
+            return true;
+        }
+        // пользователь может отменить свой заказ если он [pending or new]
+        return $order->user_id === $user->id
+            && in_array($order->status, ['pending', 'new'], true);
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Order $order): bool
+    public function updateStatus(User $user, Order $order): bool
     {
         return $user->isAdmin();
     }
