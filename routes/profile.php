@@ -15,4 +15,5 @@ Route::prefix('profile')->middleware('auth')->group(function (){
 });
 Route::middleware('auth')->group(function (){
     Route::get('/profile/orders', [ProfileOrderController::class, 'index'])->name('profile.orders.index');
+    Route::get('/profile/orders/{order}', [ProfileOrderController::class, 'show'])->name('profile.orders.show');
 });

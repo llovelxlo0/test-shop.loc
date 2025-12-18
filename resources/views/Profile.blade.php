@@ -21,16 +21,17 @@
         </div>
     @endif
 
-    <a href="{{ route('profile.orders.index') }}" class="btn btn-outline-primary">
-    История покупок
-    </a>
     @auth
-        @if(auth()->user()->isAdmin())
-            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-dark ms-2">
-                Все заказы
-            </a>
-        @endif
-    @endauth
+    <a href="{{ route('profile.orders.index') }}" class="btn btn-outline-primary">
+        История покупок
+    </a>
+
+    @can('viewAny', \App\Models\Order::class)
+        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-dark ms-2">
+            Все заказы
+        </a>
+    @endcan
+@endauth
 
     {{-- === Редактирование профиля === --}}
     <form method="post" action="{{ route('profile.edit') }}" class="mb-4">

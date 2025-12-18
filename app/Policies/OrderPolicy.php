@@ -13,19 +13,17 @@ class OrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
-    }
-    public function viewAll(User $user): bool
-    {
         return $user->isAdmin();
     }
-
     /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Order $order): bool
     {
-        return $user->isAdmin() || $user->id === $order->user_id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+        return $order->user_id === $user->id;
     }
 
     /**
