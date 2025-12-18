@@ -11,6 +11,14 @@ use App\Http\Requests\ReviewRequest;
 
 class ReviewController extends Controller
 {
+    public function show(Goods $goods)
+    {
+    $reviews = $goods->reviews()->latest()->get();
+    dd($reviews);
+    return view('goods.info', compact('goods', 'reviews'));
+    
+    }
+
     public function store(Goods $goods, ReviewRequest $request)
     {
         $this->authorize('create', Review::class);
@@ -25,7 +33,11 @@ class ReviewController extends Controller
         'rating' => $data['rating'],
         'comment' => $data['comment'] ?? null,
         'image' => $imagePath,
+        'status' => Review::STATUS_PENDING,
         ]);
+        // $reviews = Review::all();
+        // dd($reviews);
+
         return redirect()->route('goods.info', $goods)->with('success', 'Отзыв успешно добавлен.');
     }
     public function edit(Review $review)

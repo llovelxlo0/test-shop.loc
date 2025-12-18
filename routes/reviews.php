@@ -18,7 +18,7 @@ Route::middleware('auth')->group(function (){
     Route::delete('review-replies/{reply}', [ReviewReplyController::class, 'destroy'])->name('reviews.replies.destroy');
 });
 
-Route::middleware(['auth'])->prefix('reviews')->name('reviews.')->group(function() {
+Route::middleware(['auth', 'admin'])->prefix('reviews')->name('reviews.')->group(function() {
     Route::post('{review}/approve', [ReviewModerationController::class, 'approve'])->name('approve');
     Route::post('{review}/reject', [ReviewModerationController::class, 'reject'])->name('reject');
 });

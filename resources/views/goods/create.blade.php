@@ -18,7 +18,7 @@
     @endif
 
     {{-- Выбор категории --}}
-    <form method="GET" action="{{ route('goods.create') }}">
+    <form method="GET" action="{{ route('admin.goods.create') }}">
         <div class="mb-3">
             <label for="parent_id" class="form-label">Родительская категория</label>
             <select name="parent_id" id="parent_id" class="form-select" onchange="this.form.submit()">
@@ -48,7 +48,7 @@
 
     {{-- Форма создания товара --}}
     @if(request('category_id'))
-    <form method="POST" action="{{ route('goods.store') }}" enctype="multipart/form-data">
+    <form method="POST" action="{{ route('admin.goods.store') }}" enctype="multipart/form-data">
         @csrf
 
         <input type="hidden" name="category_id" value="{{ request('category_id') }}">

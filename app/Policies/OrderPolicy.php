@@ -15,6 +15,10 @@ class OrderPolicy
     {
         return true;
     }
+    public function viewAll(User $user): bool
+    {
+        return $user->isAdmin();
+    }
 
     /**
      * Determine whether the user can view the model.

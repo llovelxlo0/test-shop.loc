@@ -78,11 +78,11 @@
 
     {{-- Кнопки админа --}}
     @can('update', $goods)
-    <a href="{{ route('goods.edit', $goods) }}" class="btn btn-warning btn-sm">Редактировать</a>
+    <a href="{{ route('admin.goods.edit', $goods) }}" class="btn btn-warning btn-sm">Редактировать</a>
     @endcan
 
     @can('delete', $goods)
-        <form action="{{ route('goods.destroy', $goods) }}" method="POST" class="d-inline"
+        <form action="{{ route('admin.goods.destroy', $goods) }}" method="POST" class="d-inline"
               onsubmit="return confirm('Вы уверены, что хотите удалить этот товар?');">
             @csrf
             @method('DELETE')
@@ -94,7 +94,7 @@
     @auth
     <hr class="mt-4">
     <h5>Оставить отзыв</h5>
-    @if(session('succsess'))
+    @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
     @if($errors->any())
@@ -106,22 +106,22 @@
             </ul>
         </div>
     @endif
-        <form action="{{ route('goods.reviews.store', $goods->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="mb-3">
-                <label for="rating" class="form-label">Рейтинг (1-5):</label>
-                <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
-            </div>
-            <div class="mb-3">
-                <label for="comment" class="form-label">Комментарий:</label>
-                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="image" class="form-label">Изображение (необязательно):</label>
-                <input type="file" class="form-control" id="image" name="image" accept="image/*">
-            </div>
-            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
-        </form>
+    <form action="{{ route('goods.reviews.store', $goods) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="mb-3">
+            <label for="rating" class="form-label">Рейтинг (1-5):</label>
+            <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+        </div>
+        <div class="mb-3">
+            <label for="comment" class="form-label">Комментарий:</label>
+            <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Изображение (необязательно):</label>
+            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+    </form>
     @endauth
     <h3 class="mt-4">Отзывы</h3>
 

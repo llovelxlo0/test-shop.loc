@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Review extends Model
 {
-     public const STATUS_PENDING  = 'pending';
+    public const STATUS_PENDING  = 'pending';
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
     protected $fillable = [
@@ -33,7 +33,7 @@ class Review extends Model
     }
     public function scopeVisible($query)
     {
-        return $query->where('status', 'approved');
+        return $query->whereIn('status', [self::STATUS_APPROVED, self::STATUS_PENDING]);
     }
     public function goods()
     {

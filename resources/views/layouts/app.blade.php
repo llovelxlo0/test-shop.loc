@@ -49,7 +49,7 @@
                             </li>
                             @endif
                             @can('create', \App\Models\Goods::class)
-                                <a class="nav-link" href="{{ route('goods.create') }}">Добавить товар</a>
+                                <a class="nav-link" href="{{ route('admin.goods.create') }}">Добавить товар</a>
                             @endcan
 
                         <li class="nav-item d-flex align-items-center">

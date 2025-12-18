@@ -37,25 +37,41 @@
     </div>
 
     {{-- Статус (только для админа) --}}
-    @auth
-        @if(auth()->user()->isAdmin())
-            <div class="mt-1">
-                <span class="badge
-                    @if($review->isApproved()) bg-success
-                    @elseif($review->isRejected()) bg-danger
-                    @else bg-secondary
-                    @endif">
-                    @if($review->isApproved())
-                        Одобрен
-                    @elseif($review->isRejected())
-                        Отклонён
-                    @else
-                        На модерации
-                    @endif
-                </span>
-            </div>
-        @endif
-    @endauth
+    @can('moderate', $review)
+        <div class="mt-2 d-flex align-items-center gap-2">
+
+            {{-- Статус --}}
+            <span class="badge 
+                @if($review->isApproved()) bg-success
+                @elseif($review->isRejected()) bg-danger
+                @else bg-secondary
+                @endif">
+                @if($review->isApproved())
+                    Одобрен
+                @elseif($review->isRejected())
+                    Отклонён
+                @else
+                    На модерации
+                @endif
+            </span>
+
+            {{-- Кнопки смены статуса --}}
+            @if(!$review->isApproved())
+                <form action="{{ route('reviews.approve', $review) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-success">Одобрить</button>
+                </form>
+            @endif
+
+            @if(!$review->isRejected())
+                <form action="{{ route('reviews.reject', $review) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-danger">Отклонить</button>
+                </form>
+            @endif
+        </div>
+    @endcan    
+
 
     {{-- Лайки --}}
     @auth

@@ -8,6 +8,7 @@ use App\Services\RelatedProductService;
 use App\Services\ViewHistoryService;
 use App\Http\Requests\GoodsRequest;
 use App\Models\Attribute;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -188,48 +189,54 @@ class GoodsController extends Controller
         return response()->json($childCategories);
     }
 
-    public function FullInfo(Goods $goods) 
+    public function FullInfo(Goods $goods, Review $review) 
     {
-        $sort = request('sort', 'date');
-        $goods->load([
-            'attributes' => function ($q) {
-                $q->withPivot('value');
-            },
-            'category.parent',
-            'reviews.user',
+    $sort = request('sort', 'date');
+
+    $goods->load([
+        'attributes' => function ($q) {
+            $q->withPivot('value');
+        },
+        'category.parent',
+    ]);
+
+    $reviewsQuery = $goods->reviews()->with('user');
+
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
+        $reviewsQuery->whereIn('status', [
+            Review::STATUS_APPROVED,
+            Review::STATUS_PENDING,
         ]);
-
-        $reviewsQuery = $goods->reviews()->visible()->with('user');
-
-        if ($sort === 'rating') {
-            $reviewsQuery
-        ->withSum('votes as votes_sum', 'value') // посчитает SUM(value) по связи vote
-        ->orderByDesc('votes_sum')  // алиас формируется как: имя_связи + '_sum'
-        ->orderByDesc('created_at');
-        } else {
-            $reviewsQuery->orderByDesc('created_at');
-        }
-        $reviews = $reviewsQuery->get();
-
-        $this->viewHistoryService->add($goods);
-        $viewHistory = $this->viewHistoryService
-            ->get()
-            ->where('id', '!=', $goods->id);
-
-        $relatedGoods = $this->relatedProductService->getRelatedProducts($goods);
-
-        $isInWishlist = false;
-        if (Auth::check()) {
-            $isInWishlist = Auth::user()->wishlist()->where('goods_id', $goods->id)->exists();
-        }
-
-        return view('goods.fullinfo', [
-            'goods'        => $goods,
-            'relatedGoods' => $relatedGoods ?? collect(),
-            'viewHistory'  => $viewHistory,
-            'isInWishlist' => $isInWishlist,
-            'reviews' => $reviews,
-            'sort' => $sort,
-        ]); 
     }
+    // Админ — без фильтра, видит всё
+
+    // 🔹 Сортировка
+    if ($sort === 'rating') {
+        $reviewsQuery->withSum('votes as votes_sum', 'value')->orderByDesc('votes_sum')->orderByDesc('created_at');
+    } else {
+        $reviewsQuery->orderByDesc('created_at');
+    }
+
+    $reviews = $reviewsQuery->get();
+
+    $this->viewHistoryService->add($goods);
+
+    $viewHistory = $this->viewHistoryService->get()->where('id', '!=', $goods->id);
+
+    $relatedGoods = $this->relatedProductService->getRelatedProducts($goods);
+
+    $isInWishlist = false;
+    if (Auth::check()) {
+        $isInWishlist = Auth::user()->wishlist()->where('goods_id', $goods->id)->exists();
+    }
+
+    return view('goods.fullinfo', [
+        'goods'        => $goods,
+        'relatedGoods' => $relatedGoods ?? collect(),
+        'viewHistory'  => $viewHistory,
+        'isInWishlist' => $isInWishlist,
+        'reviews'      => $reviews,
+        'sort'         => $sort,
+    ]);
+}
 }

@@ -16,10 +16,17 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! auth()->user()?->isAdmin()) 
-            {
+        $user = $request->user();
+
+        // Не авторизован -> на логин
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Не админ -> 403
+        if (!method_exists($user, 'isAdmin') || !$user->isAdmin()) {
             abort(403);
-            }
+        }
 
         return $next($request);
     }
