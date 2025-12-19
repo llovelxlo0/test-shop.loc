@@ -1,55 +1,84 @@
 @extends('layouts.app')
 
+@section('title', 'История заказов')
+
 @section('content')
 <div class="container">
-    <h1 class="mb-3">История покупок</h1>
+    <h2 class="mb-4">История заказов</h2>
 
     @if($orders->isEmpty())
-        <p>У вас пока нет заказов.</p>
+        <div class="alert alert-info">
+            У вас пока нет заказов.
+        </div>
     @else
-        @foreach($orders as $order)
-            <div class="border rounded p-3 mb-3">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <strong>Заказ #{{ $order->id }}</strong>
-                        <div class="text-muted small">{{ $order->created_at->format('d.m.Y H:i') }}</div>
-                    </div>
-                    <div>
-                        <strong>{{ number_format($order->total, 2) }} {{ $order->currency ?? 'UAH' }}</strong>
-                    </div>
-                </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Сумма</th>
+                        <th>Заказ</th>
+                        <th class="text-center">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($orders as $order)
+                        <tr>
+                            <td>#{{ $order->id }}</td>
 
-                <hr class="my-2">
+                            <td>
+                                {{ $order->created_at->format('d.m.Y') }}
+                                <div class="text-muted small">
+                                    {{ $order->created_at->format('H:i') }}
+                                </div>
+                            </td>
 
-                @foreach($order->items as $item)
-                    <div class="d-flex align-items-center mb-2">
-                        @php $img = $item->goods->image ?? null; @endphp
+                            <td>
+                                <span class="badge bg-{{ match($order->status) {
+                                    'pending' => 'warning',
+                                    'paid' => 'success',
+                                    'shipped' => 'primary',
+                                    'completed' => 'secondary',
+                                    'cancelled' => 'danger',
+                                    default => 'light'
+                                } }}">
+                                    {{ ucfirst($order->status) }}
+                                </span>
+                            </td>
 
-                        @if($img)
-                            <img src="{{ asset('storage/' . $img) }}"
-                                 class="rounded me-2"
-                                 style="width:50px;height:50px;object-fit:cover"
-                                 alt="">
-                        @else
-                            <div class="rounded bg-light me-2" style="width:50px;height:50px;"></div>
-                        @endif
+                            <td>
+                                <strong>
+                                    {{ number_format($order->total, 2) }}
+                                    {{ $order->currency }}
+                                </strong>
+                            </td>
+                            <td>
+                                @if($order->items->first()?->goods?->image)
+                                    <img src="{{ asset('storage/'.$order->items->first()->goods->image) }}"
+                                        width="40" class="rounded">
+                                @endif
+                            </td>
 
-                        <div>
-                            <div>{{ $item->goods->name ?? 'Товар удалён' }}</div>
-                            <div class="text-muted small">
-                                {{ $item->quantity }} × {{ number_format($item->price, 2) }}
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        @endforeach
-
-        {{ $orders->links() }}
+                            <td class="text-center">
+                                @can('view', $order)
+                                    <a href="{{ route('profile.orders.show', $order) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Подробнее
+                                    </a>
+                                @endcan
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     @endif
 </div>
-    <div class="mt-4">
-        <a href="{{ route('profile') }}" class="btn btn-secondary">← Назад в профиль</a>
+ <div class="mt-4">
+        <a href="{{ route('profile') }}" class="btn btn-secondary">
+            ← Назад
+        </a>
     </div>
-</div>
 @endsection

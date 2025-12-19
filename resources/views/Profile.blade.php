@@ -21,6 +21,14 @@
         </div>
     @endif
 
+    <a href="{{ route('notifications.index') }}" class="btn btn-outline-primary">
+    Уведомления
+    @if(auth()->user()->unreadNotifications->count())
+        <span class="badge bg-danger">
+            {{ auth()->user()->unreadNotifications->count() }}
+        </span>
+    @endif
+    </a>
     @auth
     <a href="{{ route('profile.orders.index') }}" class="btn btn-outline-primary">
         История покупок

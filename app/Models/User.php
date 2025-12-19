@@ -50,7 +50,7 @@ class User extends Authenticatable
     }
     public function isAdmin(): bool
     {
-        return $this->usertype === 'admin';
+        return strtolower((string) $this->usertype) === 'admin';
     }
     public function isUser(): bool
     {

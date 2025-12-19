@@ -7,8 +7,7 @@ use App\Services\OrderService;
 use App\Services\CartService;
 use App\Models\Order;
 use App\Http\Requests\StoreOrderRequest;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+
 
 class OrderController extends Controller
 {
@@ -35,7 +34,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $this->authorize('view', $order);
-        $order->load(['items.goods']);
+        $order->load(['items.goods', 'user', 'statusLogs.user']);
         return view('orders.show', compact('order'));
     }
 

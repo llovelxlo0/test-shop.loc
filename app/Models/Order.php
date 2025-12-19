@@ -11,6 +11,20 @@ class Order extends Model
     public const STATUS_SHIPPED = 'shipped';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_CANCELLED = 'cancelled';
+    public const STATUSES = [
+        self::STATUS_PENDING   => 'Ожидает оплаты',
+        self::STATUS_PAID      => 'Оплачен',
+        self::STATUS_SHIPPED   => 'Отправлен',
+        self::STATUS_COMPLETED => 'Завершён',
+        self::STATUS_CANCELLED => 'Отменён',
+    ];
+    public const STATUS_COLORS = [
+    'pending'   => 'secondary',
+    'paid'      => 'primary',
+    'shipped'   => 'info',
+    'completed' => 'success',
+    'cancelled' => 'danger',
+];
     protected $fillable = [
         'user_id',
         'status',
@@ -30,4 +44,9 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function statusLogs()
+    {
+        return $this->hasMany(OrderStatusLog::class)->latest();
+    }
+
 }
