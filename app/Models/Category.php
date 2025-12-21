@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Goods;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Category extends Model
 {
     protected $fillable = ['name', 'parent_id'];
+    use HasFactory;
 
     public function parent() {
         return $this->belongsTo(Category::class, 'parent_id');

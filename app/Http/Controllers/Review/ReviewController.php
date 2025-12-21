@@ -35,7 +35,7 @@ class ReviewController extends Controller
         'status' => Review::STATUS_PENDING,
         ]);
 
-        return redirect()->route('goods.fullinfo', $goods)->with('success', 'Отзыв успешно добавлен.');
+        return redirect()->route('goods.info', $goods)->with('success', 'Отзыв успешно добавлен.');
     }
     public function edit(Review $review)
     {
@@ -57,13 +57,13 @@ class ReviewController extends Controller
             'comment' => $data['comment'] ?? null,
             'image' => $data['image'] ?? $review->image,
         ]);
-        return redirect()->route('goods.fullinfo', $review->goods_id)->with('success', 'Отзыв успешно обновлен.');
+        return redirect()->route('goods.info', $review->goods_id)->with('success', 'Отзыв успешно обновлен.');
     }
-    public function destroy(ReviewRequest $request, Review $review)
+    public function destroy( Review $review)
     {
         $this->authorize('delete', $review);
         $goodsId = $review->goods_id;
         $review->delete();
-        return redirect()->route('goods.fullinfo', $goodsId)->with('success', 'Отзыв успешно удален.');
+        return redirect()->route('goods.info', $goodsId)->with('success', 'Отзыв успешно удален.');
     }
 }

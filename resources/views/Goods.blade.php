@@ -15,12 +15,14 @@
             <label for="parent_id">Категория:</label>
             <select name="parent_id" id="parent_id" class="form-select">
                 <option value="">Все категории</option>
+                @if(!empty($tree))
                 @foreach($tree as $parent)
                     <option value="{{ $parent['id'] }}"
                         {{ request('parent_id') == $parent['id'] ? 'selected' : '' }}>
                         {{ $parent['name'] }}
                     </option>
                 @endforeach
+                @endif
             </select>
         </div>
 
@@ -31,12 +33,14 @@
                 <option value="">Все подкатегории</option>
                     @foreach($tree as $parent)
                         @if((int)request('parent_id') === $parent['id'])
+                            @if(!empty($parent['children']))
                             @foreach($parent['children'] as $child)
                                 <option value="{{ $child['id'] }}"
                                     @selected((int)request('subcategory_id') === $child['id'])>
                                     {{ $child['name'] }}
                                 </option>
                             @endforeach
+                          @endif
                         @endif
                     @endforeach
             </select>
@@ -99,9 +103,13 @@
 @endif
 
 {{-- Контейнер товаров --}}
-<div id="goodsList" class="row mt-4">
-    @include('partials.goods-list', ['goods' => $goods])
-</div>
+<div class="container mt-4">
+    <h2>Список товаров</h2>
+
+    <div id="goodsList" class="row g-3">
+        @include('partials.goods-list', ['goods' => $goods])
+    </div>
+</div>>
 {{-- 📦 Встраиваем JSON с категориями в безопасный блок --}}
     <script id="categories-data" type="application/json">
         {!! json_encode($tree, JSON_UNESCAPED_UNICODE) !!}
@@ -142,14 +150,16 @@
             const params = new URLSearchParams(new FormData(form));
 
             const response = await fetch(`{{ route('goods.index') }}?${params}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
 
-            const html = await response.text();
-            goodsList.innerHTML = html;
+            goodsList.innerHTML = await response.text();
         });
     });
 </script>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const toggleAdvanced = document.getElementById('toggleAdvanced');

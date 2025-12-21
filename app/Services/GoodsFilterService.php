@@ -109,22 +109,19 @@ class GoodsFilterService
      */
     protected function buildCategoryTree(): array
     {
-        $parents = Category::with('children')->whereNull('parent_id')->get();
-
-        $tree = [];
-        foreach ($parents as $parent) {
-            $tree[] = [
+        return Category::whereNull('parent_id')
+            ->with('children:id,parent_id,name')
+            ->get(['id', 'name'])
+            ->map(fn ($parent) => [
                 'id' => $parent->id,
                 'name' => $parent->name,
-                'children' => $parent->children->map(function ($child) {
-                    return [
+                'children' => $parent->children
+                    ->map(fn ($child) => [
                         'id' => $child->id,
                         'name' => $child->name,
-                    ];
-                })->toArray(),
-            ];
-        }
-
-        return $tree;
+                    ])
+                    ->values()
+                    ->toArray(),
+            ])->values()->toArray();
     }
 }
