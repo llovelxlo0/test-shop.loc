@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Notification;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Notifications\DatabaseNotification;
 
 class NotificationController extends Controller
@@ -13,7 +13,7 @@ class NotificationController extends Controller
         return view('notifications.index', compact('notifications'));
     }
 
-    public function markAllRead() 
+    public function markAllRead()
     {
         auth()->user()->unreadNotifications->markAsRead();
         return back();

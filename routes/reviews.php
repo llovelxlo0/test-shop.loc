@@ -1,10 +1,9 @@
 <?php
 
+use App\Http\Controllers\Review\ReviewController;
+use App\Http\Controllers\Review\ReviewReplyController;
+use App\Http\Controllers\Review\ReviewVoteController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\ReviewModerationController;
-use App\Http\Controllers\ReviewVoteController;
-use App\Http\Controllers\ReviewReplyController;
 
 
 Route::middleware('auth')->group(function (){
@@ -16,11 +15,6 @@ Route::middleware('auth')->group(function (){
     Route::get('review-replies/{reply}/edit', [ReviewReplyController::class, 'edit'])->name('reviews.replies.edit');
     Route::put('review-replies/{reply}', [ReviewReplyController::class, 'update'])->name('reviews.replies.update');
     Route::delete('review-replies/{reply}', [ReviewReplyController::class, 'destroy'])->name('reviews.replies.destroy');
-});
-
-Route::middleware(['auth', 'admin'])->prefix('reviews')->name('reviews.')->group(function() {
-    Route::post('{review}/approve', [ReviewModerationController::class, 'approve'])->name('approve');
-    Route::post('{review}/reject', [ReviewModerationController::class, 'reject'])->name('reject');
 });
 
 Route::middleware('auth')

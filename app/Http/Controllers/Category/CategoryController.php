@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Category;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use App\Services\CategoryService;
 use App\Models\Category;
+use App\Services\CategoryService;
+use Illuminate\Http\Request;
 
 
 class CategoryController extends Controller
 {
-    protected $categoryService;
+    protected CategoryService $categoryService;
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
@@ -72,7 +72,8 @@ class CategoryController extends Controller
     }
     public function getSubcategories(Category $parent)
     {
-        $subcategories = $this->categoryService->getChildCategories($parent->id);
-        return response()->json($subcategories);
+        return response()->json(
+            $this->categoryService->getChildCategories($parent->id)
+        );
     }
 }

@@ -1,22 +1,21 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Review;
 
-use Illuminate\Http\Request;
-use App\Models\Review;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ReviewRequest;
 use App\Models\Goods;
+use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\ReviewRequest;
 
 class ReviewController extends Controller
 {
     public function show(Goods $goods)
     {
     $reviews = $goods->reviews()->latest()->get();
-    dd($reviews);
-    return view('goods.info', compact('goods', 'reviews'));
-    
+    return view('goods.fullinfo', compact('goods', 'reviews'));
+
     }
 
     public function store(Goods $goods, ReviewRequest $request)
@@ -35,10 +34,8 @@ class ReviewController extends Controller
         'image' => $imagePath,
         'status' => Review::STATUS_PENDING,
         ]);
-        // $reviews = Review::all();
-        // dd($reviews);
 
-        return redirect()->route('goods.info', $goods)->with('success', 'Отзыв успешно добавлен.');
+        return redirect()->route('goods.fullinfo', $goods)->with('success', 'Отзыв успешно добавлен.');
     }
     public function edit(Review $review)
     {
@@ -60,13 +57,13 @@ class ReviewController extends Controller
             'comment' => $data['comment'] ?? null,
             'image' => $data['image'] ?? $review->image,
         ]);
-        return redirect()->route('goods.info', $review->goods_id)->with('success', 'Отзыв успешно обновлен.');
+        return redirect()->route('goods.fullinfo', $review->goods_id)->with('success', 'Отзыв успешно обновлен.');
     }
     public function destroy(ReviewRequest $request, Review $review)
     {
         $this->authorize('delete', $review);
         $goodsId = $review->goods_id;
         $review->delete();
-        return redirect()->route('goods.info', $goodsId)->with('success', 'Отзыв успешно удален.');
+        return redirect()->route('goods.fullinfo', $goodsId)->with('success', 'Отзыв успешно удален.');
     }
 }

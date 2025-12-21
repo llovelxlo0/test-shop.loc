@@ -1,7 +1,7 @@
-<?php  
+<?php
 
+use App\Http\Controllers\Goods\GoodsController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GoodsController;
 
 Route::get('/goods', [GoodsController::class, 'index'])->name('goods.index');
 Route::get('goods/{goods}/info', [GoodsController::class, 'FullInfo'])->name('goods.info');

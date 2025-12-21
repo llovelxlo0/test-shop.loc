@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Order;
 
-use Illuminate\Http\Request;
-use App\Services\OrderService;
-use App\Services\CartService;
-use App\Models\Order;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
+use App\Models\Order;
+use App\Services\CartService;
+use App\Services\OrderService;
 
 
 class OrderController extends Controller
 {
-    protected $orderService;
-    protected $cartService;
+    protected OrderService $orderService;
+    protected CartService $cartService;
 
     public function __construct(OrderService $orderService , CartService $cartService)
     {
@@ -28,7 +28,7 @@ class OrderController extends Controller
             $orderQuery->where('user_id', $user->id);
         }
         $orders = $orderQuery->latest()->paginate(10);
-        return view('order.index', compact('orders'));
+        return view('orders.index', compact('orders'));
     }
 
     public function show(Order $order)
@@ -49,6 +49,7 @@ class OrderController extends Controller
         foreach ($cartItems as $item) {
             $total += (int) $item->goods->price * (int) $item->quantity;
         }
+        return $this->checkout($request, $this->orderService);
     }
     public function checkout(StoreOrderRequest $request, OrderService $orderService)
     {
@@ -62,6 +63,6 @@ class OrderController extends Controller
     }
     public function confirmation(Order $order)
     {
-    return view('order.view', compact('order'));
+    return view('orders.show', compact('order'));
     }
 }

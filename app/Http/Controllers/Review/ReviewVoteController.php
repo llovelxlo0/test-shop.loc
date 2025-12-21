@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Review;
 
+use App\Http\Controllers\Controller;
 use App\Models\Review;
-use Illuminate\Http\Request;
 use App\Models\ReviewVote;
+use Illuminate\Http\Request;
 
 class ReviewVoteController extends Controller
 {

@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Review;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Review;
 use App\Models\ReviewReply;
+use Illuminate\Http\Request;
 
 class ReviewReplyController extends Controller
 {
-    public function store(Request $request, Review $review) 
+    public function store(Request $request, Review $review)
     {
         $this->authorize('create', ReviewReply::class);
 
@@ -33,7 +34,7 @@ class ReviewReplyController extends Controller
     {
         $this->authorize('update', $reply);
         $reply->load('review.goods');
-        return view('review.reply.edit', compact('reply'));
+        return view('reviews.replies.edit', compact('reply'));
     }
     public function update(Request $request, ReviewReply $reply)
     {
@@ -44,8 +45,8 @@ class ReviewReplyController extends Controller
         $reply->update($data);
         $goodsId = $reply->review->goods_id ?? null;
         if ($goodsId) {
-            return redirect()->route('goods.info', $goodsId)->with('success', 'Ответ обновлён.');
+            return redirect()->route('goods.fullinfo', $goodsId)->with('success', 'Ответ обновлён.');
         }
-        return back()->with('success', 'Ответ Обновлёе.');
+        return back()->with('success', 'Ответ обновлён.');
     }
 }

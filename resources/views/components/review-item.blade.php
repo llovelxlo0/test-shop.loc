@@ -41,7 +41,7 @@
         <div class="mt-2 d-flex align-items-center gap-2">
 
             {{-- Статус --}}
-            <span class="badge 
+            <span class="badge
                 @if($review->isApproved()) bg-success
                 @elseif($review->isRejected()) bg-danger
                 @else bg-secondary
@@ -70,7 +70,7 @@
                 </form>
             @endif
         </div>
-    @endcan    
+    @endcan
 
 
     {{-- Лайки --}}
@@ -121,15 +121,13 @@
         </div>
     @endif
 
-    {{-- ========================= --}}
     {{-- ОТВЕТЫ НА ОТЗЫВ --}}
-    {{-- ========================= --}}
-    @if($review->replies->isNotEmpty())
+    @if($review->replies->count() > 0)
         <div class="mt-3 ms-4 border-start ps-3">
             @foreach($review->replies as $reply)
                 <div class="mb-2">
                     <div class="d-flex justify-content-between">
-                        <strong>{{ $reply->user->name ?? 'Пользователь' }}</strong>
+                        <strong>{{ $reply->user->name }}</strong>
                         <small class="text-muted">
                             {{ $reply->created_at->format('d.m.Y H:i') }}
                         </small>

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
+use App\Http\Controllers\Controller;
 use App\Services\CartService;
 use App\Services\TwoFactorService;
-
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 
 class AuthController extends Controller
@@ -28,7 +28,7 @@ class AuthController extends Controller
             'name' => 'required',
             'password' => 'required',
         ]);
-        
+
         $credentials = $request->only('name', 'password');
 
         if (Auth::attempt($credentials)) {
@@ -50,6 +50,6 @@ class AuthController extends Controller
         Auth::logout();
         return redirect('/')->with('status', 'Logged out successfully.');
     }
-    
+
 
 }

@@ -10,7 +10,7 @@ class CategoryService
 
     public function getChildCategories($parentId)
     {
-        return Category::where('parent_id', $parentId)->pluck('name', 'id');
+        return Category::where('parent_id', $parentId)->select('id', 'name')->get();
     }
     public function getAllCategories()
     {

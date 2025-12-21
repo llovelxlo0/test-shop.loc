@@ -1,21 +1,22 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Goods;
 
-use App\Models\Category;
-use App\Models\Goods;
-use App\Services\RelatedProductService;
-use App\Services\ViewHistoryService;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\GoodsRequest;
 use App\Models\Attribute;
+use App\Models\Category;
+use App\Models\Goods;
 use App\Models\Review;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Services\CategoryService;
-use App\Services\GoodsFilterService;
-use App\Services\GoodsCrudService;
 use App\Services\GoodsAttributesService;
+use App\Services\GoodsCrudService;
+use App\Services\GoodsFilterService;
+use App\Services\RelatedProductService;
+use App\Services\ViewHistoryService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GoodsController extends Controller
 {
@@ -26,8 +27,8 @@ class GoodsController extends Controller
     protected $goodsAttributesService;
     protected $goodsCrudService;
     public function __construct(
-    RelatedProductService $relatedProductService, 
-    ViewHistoryService $viewHistoryService, 
+    RelatedProductService $relatedProductService,
+    ViewHistoryService $viewHistoryService,
     CategoryService $categoryService,
     GoodsFilterService $goodsFilterService,
     GoodsAttributesService $goodsAttributesService,
@@ -47,10 +48,11 @@ class GoodsController extends Controller
         $data = $this->goodsFilterService->getFilteredData($request);
 
         // AJAX-запросы — только JSON с товарами
-        if ($request->ajax()) {
-            return response()->json($data['goods']);
+        if ($request->ajax() && $request->boolean('apply')) {
+            return view('partials.goods-list', [
+                'goods' => $data['goods'],
+            ]);
         }
-
         return view('Goods', [
             'goods'              => $data['goods'],
             'tree'               => $data['tree'],
@@ -59,23 +61,9 @@ class GoodsController extends Controller
         ]);
     }
 
-    // Дерево категорий: родитель → подкатегории.
-    protected function buildCategoryTree(): array
-    {
-        $parents = Category::whereNull('parent_id')->get();
-
-        $tree = [];
-        foreach ($parents as $parent) {
-            $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
-        }
-
-        return $tree;
-    }
-
     // Построение атрибутов для фильтрации с учетом выбранных категорий
     protected function buildAttributesForFilter(?int $parentId, ?int $subcategoryId)
     {
-        
         $categoryIdsForFilter = Goods::query()
             ->when($parentId, function ($q) use ($parentId) {
                 $childIds = Category::where('parent_id', $parentId)->pluck('id')->toArray();
@@ -115,8 +103,8 @@ class GoodsController extends Controller
         return $attributesForFilter;
     }
 
-        
-    public function create(Request $request) 
+
+    public function create(Request $request)
     {
         $this->authorize('create', Goods::class);
 
@@ -136,7 +124,7 @@ class GoodsController extends Controller
         }
         return view('goods.create', compact('parents', 'childCategories', 'selectedParentId', 'categoryAttributes'));
     }
-    public function store(GoodsRequest $request) 
+    public function store(GoodsRequest $request)
     {
         $this->authorize('create', Goods::class);
 
@@ -149,7 +137,7 @@ class GoodsController extends Controller
         $this->goodsAttributesService->syncAttributes($good, $data['attributes'] ?? []);
         return redirect()->route('goods.index')->with('success', 'Товар успешно создан.');
     }
-    public function edit(Goods $good, Request $request) 
+    public function edit(Goods $good, Request $request)
     {
         $this->authorize('update', $good);
 
@@ -163,7 +151,7 @@ class GoodsController extends Controller
         }
         return view('goods.edit', compact('good', 'parents', 'childCategories', 'selectedParentId'));
     }
-    public function update(Goods $good, GoodsRequest $request) 
+    public function update(Goods $good, GoodsRequest $request)
     {
         $this->authorize('update', $good);
 
@@ -176,7 +164,7 @@ class GoodsController extends Controller
         $this->goodsAttributesService->syncAttributes($good, $data['attributes'] ?? []);
         return redirect()->route('goods.index')->with('success', 'Товар успешно обновлен.');
     }
-    public function destroy(Goods $good) 
+    public function destroy(Goods $good)
     {
         $this->authorize('delete', $good);
 
@@ -189,7 +177,7 @@ class GoodsController extends Controller
         return response()->json($childCategories);
     }
 
-    public function FullInfo(Goods $goods, Review $review) 
+    public function FullInfo(Goods $goods)
     {
     $sort = request('sort', 'date');
 
@@ -200,7 +188,10 @@ class GoodsController extends Controller
         'category.parent',
     ]);
 
-    $reviewsQuery = $goods->reviews()->with('user');
+        $reviewsQuery = $goods->reviews()->with([
+            'user:id,name',
+            'replies.user:id,name',
+        ]);
 
     if (!auth()->check() || !auth()->user()->isAdmin()) {
         $reviewsQuery->whereIn('status', [
@@ -208,11 +199,11 @@ class GoodsController extends Controller
             Review::STATUS_PENDING,
         ]);
     }
-    // Админ — без фильтра, видит всё
 
     // 🔹 Сортировка
     if ($sort === 'rating') {
-        $reviewsQuery->withSum('votes as votes_sum', 'value')->orderByDesc('votes_sum')->orderByDesc('created_at');
+        $reviewsQuery->withSum('votes as votes_sum', 'value')
+            ->orderByDesc('votes_sum')->orderByDesc('created_at');
     } else {
         $reviewsQuery->orderByDesc('created_at');
     }
@@ -221,10 +212,6 @@ class GoodsController extends Controller
 
     $this->viewHistoryService->add($goods);
 
-    $viewHistory = $this->viewHistoryService->get()->where('id', '!=', $goods->id);
-
-    $relatedGoods = $this->relatedProductService->getRelatedProducts($goods);
-
     $isInWishlist = false;
     if (Auth::check()) {
         $isInWishlist = Auth::user()->wishlist()->where('goods_id', $goods->id)->exists();
@@ -232,8 +219,8 @@ class GoodsController extends Controller
 
     return view('goods.fullinfo', [
         'goods'        => $goods,
-        'relatedGoods' => $relatedGoods ?? collect(),
-        'viewHistory'  => $viewHistory,
+        'relatedGoods' => $this->relatedProductService->getRelatedProducts($goods),
+        'viewHistory'  => $this->viewHistoryService->get()->where('id', '!=', $goods->id),
         'isInWishlist' => $isInWishlist,
         'reviews'      => $reviews,
         'sort'         => $sort,

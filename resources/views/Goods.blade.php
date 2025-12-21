@@ -7,64 +7,55 @@
     <h2>Товары</h2>
 
     {{-- Фильтр --}}
-<form method="GET" action="{{ route('goods.index') }}" id="categoryForm" class="row mb-3">
-    <div class="col-md-4">
-        <label for="parent_id">Категория:</label>
-        <select id="parent_id" name="parent_id" class="form-select">
-            <option value="">Все категории</option>
-            @foreach($tree as $parentName => $children)
-                @php
-                    // Берём id родителя по имени (как ты уже делал)
-                    $parentId = \App\Models\Category::where('name', $parentName)->value('id');
-                @endphp
-                <option value="{{ $parentId }}"
-                        {{ (int)request('parent_id') === $parentId ? 'selected' : '' }}>
-                    {{ $parentName }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+    <form method="GET" action="{{ route('goods.index') }}" id="categoryForm" class="row mb-3">
+        <input type="hidden" name="apply" value="1">
 
-    <div class="col-md-4">
-        <label for="subcategory_id">Подкатегория:</label>
-        <select id="subcategory_id" name="subcategory_id" class="form-select">
-            <option value="">Все подкатегории</option>
-            @php
-                $selectedParentId = request('parent_id');
-            @endphp
+        {{-- Родительская категория --}}
+        <div class="col-md-4">
+            <label for="parent_id">Категория:</label>
+            <select name="parent_id" id="parent_id" class="form-select">
+                <option value="">Все категории</option>
+                @foreach($tree as $parent)
+                    <option value="{{ $parent['id'] }}"
+                        {{ request('parent_id') == $parent['id'] ? 'selected' : '' }}>
+                        {{ $parent['name'] }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-            @if($selectedParentId)
-                @php
-                    $parent = \App\Models\Category::find($selectedParentId);
-                @endphp
-                @if($parent)
-                    @foreach($parent->children as $child)
-                        <option value="{{ $child->id }}"
-                                {{ (int)request('subcategory_id') === $child->id ? 'selected' : '' }}>
-                            {{ $child->name }}
-                        </option>
+        {{-- Подкатегории --}}
+        <div class="col-md-4">
+            <label for="subcategory_id">Подкатегория:</label>
+            <select id="subcategory_id" name="subcategory_id" class="form-select">
+                <option value="">Все подкатегории</option>
+                    @foreach($tree as $parent)
+                        @if((int)request('parent_id') === $parent['id'])
+                            @foreach($parent['children'] as $child)
+                                <option value="{{ $child['id'] }}"
+                                    @selected((int)request('subcategory_id') === $child['id'])>
+                                    {{ $child['name'] }}
+                                </option>
+                            @endforeach
+                        @endif
                     @endforeach
-                @endif
-            @endif
-        </select>
-    </div>
-
-    <div class="col-md-4 d-flex align-items-end gap-2">
-        {{-- Кнопка обычного фильтра по категории --}}
-        <button type="submit" class="btn btn-primary">
-            Показать
-        </button>
-
-        {{-- Кнопка, которая покажет / спрячёт расширенный фильтр --}}
-        <button type="button"
-                id="toggleAdvanced"
-                class="btn btn-outline-secondary"
-                {{-- Если атрибутов пока нет – блокируем кнопку --}}
-                {{ (isset($attributesForFilter) && $attributesForFilter->count()) ? '' : 'disabled' }}>
-            Расширенный фильтр
-        </button>
-    </div>
-</form>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            {{-- Кнопка обычного фильтра по категории --}}
+            <button type="submit" class="btn btn-primary">
+                Показать
+            </button>
+            {{-- Кнопка, которая покажет / спрячёт расширенный фильтр --}}
+            <button type="button"
+                    id="toggleAdvanced"
+                    class="btn btn-outline-secondary">
+                Расширенный фильтр
+            </button>
+        </div>
+    </form>
+</div>
+    {{-- Расширенный фильтр по характеристикам --}}
 @if(isset($attributesForFilter) && $attributesForFilter->count())
     <div id="advancedFilters" class="border rounded p-3 mb-3 d-none">
         <h5>Расширенный фильтр по характеристикам</h5>
@@ -96,7 +87,7 @@
                 </div>
             @endforeach
 
-            <button type="submit" class="btn btn-sm btn-primary">
+            <button type="submit" form="categoryForm" class="btn btn-sm btn-primary">
                 Применить фильтр
             </button>
             <a href="{{ route('goods.index', ['parent_id' => request('parent_id'), 'subcategory_id' => request('subcategory_id')]) }}"
@@ -107,107 +98,66 @@
     </div>
 @endif
 
-
-
-
-    {{-- Контейнер товаров --}}
-    <div id="goodsList" class="row mt-4">
-        @foreach($goods as $good)
-            <div class="col-md-3 mb-3">
-                <x-product-card :goods="$good" />
-            </div>
-        @endforeach
-    </div>
-
-
-
+{{-- Контейнер товаров --}}
+<div id="goodsList" class="row mt-4">
+    @include('partials.goods-list', ['goods' => $goods])
+</div>
 {{-- 📦 Встраиваем JSON с категориями в безопасный блок --}}
-<script id="categories-data" type="application/json">
-    {!! json_encode($tree) !!}
-</script>
-{{-- JSON с категориями (должен быть ДО основного JS!) --}}
-    @if(isset($tree))
     <script id="categories-data" type="application/json">
-        {!! json_encode($tree) !!}
+        {!! json_encode($tree, JSON_UNESCAPED_UNICODE) !!}
     </script>
-    @endif
-
     {{-- Основной JS --}}
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const raw = document.getElementById('categories-data')?.textContent;
-        if (!raw) return; // нет категорий — выходим
-
-        const tree = JSON.parse(raw);
-
-        // ловим клики по категориям
-        document.querySelectorAll('.dropdown-item').forEach(el => {
-            el.addEventListener('click', e => {
-                const parent = e.target.closest('.dropdown-submenu')
-                    ?.querySelector('.dropdown-toggle')
-                    ?.textContent?.trim();
-                const subcategory = e.target.textContent.trim();
-
-                e.preventDefault();
-                filterGoods(parent, subcategory);
-            });
-        });
-
-        async function filterGoods(parentName, subcategoryName) {
-            // получаем id родителя и подкатегории
-            const parentId = Object.keys(tree).find(
-                p => p.toLowerCase() === parentName?.toLowerCase()
-            )
-                ? Object.keys(tree).indexOf(parentName) + 1
-                : null;
-
-            let subcategoryId = null;
-            if (subcategoryName && parentName) {
-                const parentChildren = tree[parentName];
-                subcategoryId = Object.entries(parentChildren).find(([id, name]) =>
-                    name.toLowerCase() === subcategoryName.toLowerCase()
-                )?.[0];
-            }
-
-            // создаём ссылку с параметрами
-            const url = new URL('/goods', window.location.origin);
-            if (parentId) url.searchParams.append('parent_id', parentId);
-            if (subcategoryId) url.searchParams.append('subcategory_id', subcategoryId);
-
-            // редирект на страницу фильтрации
-            window.location.href = url.toString();
-        }
-    });
-    </script>
-
-{{-- Основной JS-код --}}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const categoryForm   = document.getElementById('categoryForm');
-    const parentSelect   = document.getElementById('parent_id');
-    const childSelect    = document.getElementById('subcategory_id');
-    const toggleAdvanced = document.getElementById('toggleAdvanced');
-    const advancedBlock  = document.getElementById('advancedFilters');
+    document.addEventListener('DOMContentLoaded', () => {
+        const parentSelect = document.getElementById('parent_id');
+        const subcategorySelect = document.getElementById('subcategory_id');
 
-    if (parentSelect && childSelect && categoryForm) {
-        // При смене родительской категории:
-        parentSelect.addEventListener('change', () => {
-            // Сбрасываем подкатегорию и отправляем форму
-            childSelect.value = '';
-            categoryForm.submit();
+        parentSelect.addEventListener('change', function () {
+            const parentId = this.value;
+            subcategorySelect.innerHTML = '<option value="">Все подкатегории</option>';
+
+            if (!parentId) return;
+
+            fetch(`/categories/${parentId}/subcategories`)
+                .then(r => r.json())
+                .then(data => {
+                    data.forEach(sub => {
+                        const option = document.createElement('option');
+                        option.value = sub.id;
+                        option.textContent = sub.name;
+                        subcategorySelect.appendChild(option);
+                    });
+                });
         });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('categoryForm');
+        const goodsList = document.getElementById('goodsList');
 
-        // При смене подкатегории сразу отправляем форму
-        childSelect.addEventListener('change', () => {
-            categoryForm.submit();
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const params = new URLSearchParams(new FormData(form));
+
+            const response = await fetch(`{{ route('goods.index') }}?${params}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            const html = await response.text();
+            goodsList.innerHTML = html;
         });
-    }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleAdvanced = document.getElementById('toggleAdvanced');
+        const advancedBlock  = document.getElementById('advancedFilters');
 
-    if (toggleAdvanced && advancedBlock) {
-        toggleAdvanced.addEventListener('click', () => {
+        toggleAdvanced?.addEventListener('click', () => {
             advancedBlock.classList.toggle('d-none');
-        });
-    }
+    });
 });
 </script>
 @endsection

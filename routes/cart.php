@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Cart\CartController;
+use App\Http\Controllers\Order\OrderController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\OrderController;
 
 
 Route::get('cart', [CartController::class, 'viewCart'])->name('cart.view');

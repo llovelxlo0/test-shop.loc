@@ -1,13 +1,13 @@
 <?php
+
+use App\Http\Controllers\Category\CategoryController;
+use App\Http\Controllers\Goods\GoodsController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminOrderController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\GoodsController;
-use App\Http\Controllers\ReviewModerationController;
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\ReviewModerationController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function (){
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::post('/reviews/{review}/approve', [ReviewModerationController::class, 'approve'])->name('reviews.approve');
     Route::post('/reviews/{review}/reject', [ReviewModerationController::class, 'reject'])->name('reviews.reject');

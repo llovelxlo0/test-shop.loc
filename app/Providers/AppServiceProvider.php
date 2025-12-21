@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -32,5 +34,15 @@ class AppServiceProvider extends ServiceProvider
             }
             $view->with('tree', $tree);
         });
+        DB::listen(function ($query) {
+            if ($query->time > 100) {
+                logger()->warning('Slow query', [
+                    'sql' => $query->sql,
+                    'time' => $query->time,
+                ]);
+            }
+        });
+        Model::preventLazyLoading(!app()->isProduction());
     }
+
 }

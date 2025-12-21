@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Category\CategoryController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategoryController;
 
 Route::resource('categories', CategoryController::class);
+Route::get('/categories/{parent}/subcategories', [CategoryController::class, 'getSubcategories']);
+

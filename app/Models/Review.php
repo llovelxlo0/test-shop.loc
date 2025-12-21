@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property \Illuminate\Database\Eloquent\Collection $replies
+ */
+
 class Review extends Model
 {
     public const STATUS_PENDING  = 'pending';

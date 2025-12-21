@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\TwoFactorService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TwoFactorLoginController extends Controller
 {
@@ -19,10 +20,10 @@ class TwoFactorLoginController extends Controller
     {
         return view('TwoFactorLogin');
     }
-    
+
     public function verify(Request $request)
     {
-        
+
         $user = User::find(session('2fa_pending'));
 
     if (!$user) {
@@ -32,7 +33,7 @@ class TwoFactorLoginController extends Controller
     if ($this->service->verifyCode($user, $request->input('otp'))) {
         session()->forget('2fa_pending');
         session()->put('2fa_passed', true);
-        
+
         Auth::login($user);
 
         return redirect()->intended('/')->with('status', 'Login successful!');

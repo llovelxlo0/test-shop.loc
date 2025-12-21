@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\Order;
@@ -34,7 +35,7 @@ class AdminOrderController extends Controller
         ->withQueryString();
         return view('admin.orders.index', compact('orders'));
     }
-   
+
     public function updateStatus(Request $request, Order $order)
     {
         $this->authorize('updateStatus', $order);
