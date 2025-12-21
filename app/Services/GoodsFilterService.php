@@ -15,29 +15,23 @@ class GoodsFilterService
      */
     public function getFilteredData(Request $request): array
     {
-        $query = Goods::query();
+        $query = Goods::query()
+            ->with([
+                'category:id,name,parent_id',
+            ]);
 
-        $parentId      = $request->input('parent_id');       // родительская категория
-        $subcategoryId = $request->input('subcategory_id');  // подкатегория
+        $parentId      = $request->integer('parent_id');       // родительская категория
+        $subcategoryId = $request->integer('subcategory_id');  // подкатегория
         $attributeFilters = $request->input('attributes', []); // фильтр по EAV
 
         /*
          * 1. Фильтр по категориям
          */
-        if (!empty($parentId)) {
-            $parentId = (int) $parentId;
-
-            // Все подкатегории выбранного родителя
-            $childIds = Category::where('parent_id', $parentId)
-                ->pluck('id')
-                ->toArray();
-
-            // Товары из родителя + всех его подкатегорий
+        if ($parentId) {
+            $childIds = Category::where('parent_id', $parentId)->pluck('id')->toArray();
             $query->whereIn('category_id', array_merge([$parentId], $childIds));
         }
-
-        if (!empty($subcategoryId)) {
-            $subcategoryId = (int) $subcategoryId;
+        if ($subcategoryId) {
             $query->where('category_id', $subcategoryId);
         }
 
@@ -46,25 +40,19 @@ class GoodsFilterService
          * Формат: attributes[attribute_id] = [value1, value2, ...]
          */
         if (!empty($attributeFilters)) {
-            $query->where(function ($q) use ($attributeFilters) {
-                foreach ($attributeFilters as $attrId => $values) {
-                    $values = array_filter((array) $values);
-
-                    // Если по этому атрибуту ничего не выбрали — пропускаем
-                    if (empty($values)) {
-                        continue;
-                    }
-
-                    $q->whereHas('attributes', function ($qa) use ($attrId, $values) {
-                        $qa->where('attributes.id', $attrId)
-                           ->whereIn('attribute_values.value', $values);
-                    });
+            foreach ($attributeFilters as $attributeId => $values) {
+                $values = array_filter((array) $values);
+                if (empty($values)) {
+                    continue;
                 }
-            });
+                $query->whereHas('attributes', function ($q) use ($attributeId, $values) {
+                   $q->where('attributes.id', $attributeId)->whereIn('attribute_values.value', $values);
+                });
+            }
         }
 
         // Товары по всем фильтрам
-        $goods = $query->get();
+        $goods = $query->paginate(12)->withQueryString();
 
         /*
          * 3. Дерево категорий для выпадающего списка
@@ -75,52 +63,39 @@ class GoodsFilterService
          * 4. Список категорий, которые сейчас участвуют в выборке
          * (чтобы не показывать в фильтре атрибуты, которых нет в конкретной категории)
          */
-        $categoryIdsForFilter = Goods::query()
-            ->when($parentId, function ($q) use ($parentId) {
-                $childIds = Category::where('parent_id', $parentId)
-                    ->pluck('id')
-                    ->toArray();
-
-                $q->whereIn('category_id', array_merge([$parentId], $childIds));
-            })
-            ->when($subcategoryId, function ($q) use ($subcategoryId) {
+        $categoryIdsForFilter = Goods::query()->when($parentId, function ($q, $parentId) {
+           $childIds = Category::where('parent_id', $parentId)->pluck('id')->toArray();
+           $q->whereIn('category_id', array_merge([$parentId], $childIds));
+        })
+            ->when($subcategoryId, function ($q) use ($subcategoryId){
                 $q->where('category_id', $subcategoryId);
-            })
-            ->distinct()
-            ->pluck('category_id');
+            })->distinct()->pluck('category_id');
 
         /*
          * 5. Атрибуты, которые реально есть у товаров этих категорий
          */
         $attributes = Attribute::whereHas('goods', function ($q) use ($categoryIdsForFilter) {
-                if ($categoryIdsForFilter->isNotEmpty()) {
-                    $q->whereIn('goods.category_id', $categoryIdsForFilter);
-                }
-            })
-            ->get();
+            if ($categoryIdsForFilter->isNotEmpty()) {
+                $q->whereIn('goods.category_id', $categoryIdsForFilter);
+            }
+        })->get();
 
         /*
          * 6. Для каждого атрибута — набор возможных значений (для checkboxes)
          */
-        $attributesForFilter = $attributes->map(function ($attr) use ($categoryIdsForFilter) {
-            $valuesQuery = DB::table('attribute_values')
-                ->where('attribute_id', $attr->id);
-
-            if ($categoryIdsForFilter->isNotEmpty()) {
-                $valuesQuery
-                    ->join('goods', 'goods.id', '=', 'attribute_values.goods_id')
+        $attributeValues = DB::table('attribute_values')
+            ->select('attribute_id', 'value')
+            ->when($categoryIdsForFilter->isNotEmpty(), function ($q) use ($categoryIdsForFilter){
+                $q->join('goods', 'goods.id', '=', 'attribute_values.goods_id')
                     ->whereIn('goods.category_id', $categoryIdsForFilter);
-            }
+            })->distinct()->get()->groupBy('attribute_id');
 
-            $attr->filter_values = $valuesQuery
-                ->distinct()
-                ->pluck('value')
-                ->sort()
-                ->values();
-
+        $attributesForFilter = $attributes->map(function ($attr) use ($attributeValues){
+            $attr->filter_values = $attributeValues[$attr->id]?->pluck('value')->sort()->values() ?? collect();
             return $attr;
         });
 
+        // Готовим результат
         return [
             'goods'              => $goods,
             'tree'               => $tree,
@@ -134,11 +109,20 @@ class GoodsFilterService
      */
     protected function buildCategoryTree(): array
     {
-        $parents = Category::whereNull('parent_id')->get();
-        $tree = [];
+        $parents = Category::with('children')->whereNull('parent_id')->get();
 
+        $tree = [];
         foreach ($parents as $parent) {
-            $tree[$parent->name] = $parent->children()->pluck('name', 'id')->toArray();
+            $tree[] = [
+                'id' => $parent->id,
+                'name' => $parent->name,
+                'children' => $parent->children->map(function ($child) {
+                    return [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                    ];
+                })->toArray(),
+            ];
         }
 
         return $tree;

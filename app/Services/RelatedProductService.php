@@ -10,7 +10,7 @@ class RelatedProductService
 {
     public function getRelatedProducts(Goods $goods, int $limit = 6)
     {
-        //подгрузка всего 
+        //подгрузка всего
         $goods->loadMissing(['attributes', 'category.attributes']);
 
         $category = $goods->category;
@@ -32,7 +32,7 @@ class RelatedProductService
         }
         return $relatedGoods;
     }
-    //Возвращаем атррибуты по которым ищем похожие товары
+    //Возвращаем аттрибуты по которым ищем похожие товары
     protected function getComparableAttributesForCategory(Category $category) : Collection
     {
         return $category->attributes()->get()->filter(fn($attr) => $attr->pivot->is_comparable ?? true);
@@ -45,7 +45,7 @@ class RelatedProductService
             return collect();
         }
         $goodsAttributes = $goods->attributes()->get();
-        
+
         //запрос на похожие товары
         $query = Goods::query()->where('id', '!=', $goods->id);
 

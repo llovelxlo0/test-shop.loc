@@ -1,9 +1,8 @@
 <?php
 
+use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Profile\ProfileOrderController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProfileOrderController;
-use App\Http\Controllers\AdminOrderController;
 
 
 Route::prefix('profile')->middleware('auth')->group(function (){

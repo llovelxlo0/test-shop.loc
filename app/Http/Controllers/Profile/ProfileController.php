@@ -1,17 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Profile;
 
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\TwoFactorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Services\TwoFactorService;
 use PragmaRX\Google2FAQRCode\Google2FA;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
 
 class ProfileController extends Controller
 {
@@ -32,19 +29,19 @@ class ProfileController extends Controller
             'isTwoFactorEnabled' => $isTwoFactorEnabled,
             'qrCodeUrl' => $qrCodeUrl,
             'secret' => $secret,
-        ]); 
+        ]);
     }
 
     public function editProfile(Request $request) {
-        
-        $user = User::find(Auth::id()); 
-        $rules = []; 
+
+        $user = User::find(Auth::id());
+        $rules = [];
 
         if ($request->filled('name')) {
-            $rules['name'] = 'string|max:255';  
+            $rules['name'] = 'string|max:255';
         }
         if ($request->filled('email')) {
-            $rules['email'] = 'string|email|max:255|unique:users,email,' . $user->id;  
+            $rules['email'] = 'string|email|max:255|unique:users,email,' . $user->id;
         }
         if ($request->filled('password')) {
             $rules['password'] = 'nullable|string|min:6|confirmed';
@@ -52,7 +49,7 @@ class ProfileController extends Controller
         $validated = $request->validate($rules);
 
         // update only filled fields
-        if (isset($validated['name'])) {  
+        if (isset($validated['name'])) {
             $user->name = $validated['name'];
         }
         if (isset($validated['email'])) {  // Update email
@@ -65,7 +62,7 @@ class ProfileController extends Controller
         return redirect()->route('profile')->with('success', 'Profile updated successfully!');
     }
 
-    public function setupTwoFactor() 
+    public function setupTwoFactor()
     {
         $user = Auth::user();
         $secret = $this->twoFactorService->generateSecret($user);

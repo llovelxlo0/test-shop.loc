@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Wishlist;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\Goods;
-use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 
 class WishlistController extends Controller
@@ -23,5 +22,10 @@ class WishlistController extends Controller
 
         $user->wishlist()->attach($goods->id);
         return response()->json(['status' => 'added to wishlist']);
+   }
+   public function index()
+   {
+        $items = Auth::user()->wishlist()->with('goods')->get();
+        return view('wishlist.index', compact('items'));
    }
 }

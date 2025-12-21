@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Profile;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
 use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileOrderController extends Controller
 {
