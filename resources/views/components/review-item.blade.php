@@ -57,14 +57,14 @@
 
             {{-- Кнопки смены статуса --}}
             @if(!$review->isApproved())
-                <form action="{{ route('reviews.approve', $review) }}" method="POST" class="d-inline">
+                <form action="{{ route('admin.reviews.approve', $review) }}" method="POST" class="d-inline">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-success">Одобрить</button>
                 </form>
             @endif
 
             @if(!$review->isRejected())
-                <form action="{{ route('reviews.reject', $review) }}" method="POST" class="d-inline">
+                <form action="{{ route('admin.reviews.reject', $review) }}" method="POST" class="d-inline">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-danger">Отклонить</button>
                 </form>
