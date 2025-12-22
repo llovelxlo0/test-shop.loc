@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Category;
 use App\Models\CartItem;
@@ -11,16 +12,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Goods extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
-        'description', 
-        'price', 
+        'description',
+        'price',
         'image',
         'category_id',
         'stock'
     ];
 
-    public function category() 
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
