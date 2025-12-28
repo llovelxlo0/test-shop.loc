@@ -1,61 +1,193 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+**Production-ready portfolio project** demonstrating practical Laravel
+skills, clean MVC architecture, and real-world features of an online
+store.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project is intended for **GitHub portfolio presentation** and
+evaluation by recruiters.
 
-## About Laravel
+------------------------------------------------------------------------
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🔍 Project Overview
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+A fully functional e-commerce application built with **Laravel**,
+featuring a product catalog, review system with moderation, role-based
+access control, and AJAX-powered filtering.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The project focuses on **backend correctness, authorization logic, and
+maintainable Blade architecture**, rather than visual complexity.
 
-## Learning Laravel
+------------------------------------------------------------------------
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🚀 Key Features
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### User & Auth
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+-   User registration and authentication
+-   Role-based access (User / Admin)
+-   Wishlist functionality
+-   Product view history
 
-## Laravel Sponsors
+### Product Catalog
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   Responsive product grid layout (marketplace-style)
+-   Categories and subcategories
+-   Product detail page
+-   Related products
+-   Stock availability
+-   Image handling via Laravel Storage
 
-### Premium Partners
+### Reviews System
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+-   Product reviews with rating (1--5)
+-   Optional image upload in reviews
+-   Nested replies to reviews
+-   Review usefulness voting (like / dislike)
+-   Sorting:
+    -   by date
+    -   by usefulness score
 
-## Contributing
+### Moderation & Security
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+-   Review moderation workflow:
+    -   `pending`
+    -   `approved`
+    -   `rejected`
+-   Admin can change review status directly from UI
+-   Authorization via **Laravel Policies**
+-   Form validation via **Form Requests**
+-   CSRF protection
 
-## Code of Conduct
+### AJAX
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+-   Product filtering without page reload
+-   Fetch API usage
+-   Blade partials for dynamic content updates
 
-## Security Vulnerabilities
+------------------------------------------------------------------------
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🧠 Technical Highlights (For Recruiters)
 
-## License
+-   Clean **MVC separation**
+-   Correct usage of **Eloquent relationships**
+-   Authorization logic with **Policies**
+-   Non-SPA AJAX approach (progressive enhancement)
+-   Reusable Blade components
+-   Storage abstraction for file uploads
+-   Readable and maintainable code structure
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+------------------------------------------------------------------------
+
+## 🧰 Tech Stack
+
+**Backend** - PHP 8+ - Laravel - Eloquent ORM - Laravel Policies &
+Requests
+
+**Frontend** - Blade Templates - Bootstrap 5 - JavaScript (Fetch API)
+
+**Database** - MySQL
+
+------------------------------------------------------------------------
+
+## 📁 Project Structure (Excerpt)
+
+    app/
+     ├── Models/
+     │   ├── Goods.php
+     │   ├── Review.php
+     │   └── User.php
+     ├── Http/
+     │   ├── Controllers/
+     │   ├── Requests/
+     │   └── Policies/
+    resources/
+     ├── views/
+     │   ├── goods/
+     │   ├── partials/
+     │   └── components/
+    routes/
+     └── web.php
+
+------------------------------------------------------------------------
+
+## ⚙️ Installation
+
+``` bash
+git clone https://github.com/your-username/laravel-ecommerce.git
+cd laravel-ecommerce
+composer install
+npm install
+npm run build
+```
+
+``` bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Configure database connection in `.env`, then:
+
+``` bash
+php artisan migrate --seed
+php artisan storage:link
+php artisan serve
+```
+
+------------------------------------------------------------------------
+
+## 👑 Admin Access
+
+To enable admin privileges:
+
+``` bash
+php artisan tinker
+```
+
+``` php
+$user = User::find(1);
+$user->is_admin = true;
+$user->save();
+```
+
+------------------------------------------------------------------------
+
+## 🏷 Review Status System
+
+``` php
+STATUS_PENDING
+STATUS_APPROVED
+STATUS_REJECTED
+```
+
+Helper methods:
+
+``` php
+$review->isPending();
+$review->isApproved();
+$review->isRejected();
+```
+
+------------------------------------------------------------------------
+
+## 🎯 Project Goals
+
+-   Demonstrate real Laravel backend skills
+-   Show understanding of authorization & security
+-   Apply clean Blade architecture without SPA frameworks
+-   Build a realistic business-oriented application
+
+------------------------------------------------------------------------
+
+## 🛠 Possible Enhancements
+
+-   Pagination
+-   Full-text product search
+-   Admin dashboard
+-   REST API
+-   Vue / React frontend
+-   Docker environment
+
+------------------------------------------------------------------------
+
+## 📄 License
+
+This project is open-source and used for portfolio purposes.
